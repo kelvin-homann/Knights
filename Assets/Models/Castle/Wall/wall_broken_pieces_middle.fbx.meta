@@ -1,0 +1,200 @@
+fileFormatVersion: 2
+guid: 4cd662588f16cd743a0ade0bb7ff2399
+ModelImporter:
+  serializedVersion: 23
+  fileIDToRecycleName:
+    100000: Pieces_1
+    100002: Pieces_10
+    100004: Pieces_11
+    100006: Pieces_12
+    100008: Pieces_13
+    100010: Pieces_14
+    100012: Pieces_15
+    100014: Pieces_16
+    100016: Pieces_17
+    100018: Pieces_18
+    100020: Pieces_19
+    100022: Pieces_2
+    100024: Pieces_20
+    100026: Pieces_3
+    100028: Pieces_4
+    100030: Pieces_5
+    100032: Pieces_6
+    100034: Pieces_7
+    100036: Pieces_8
+    100038: Pieces_9
+    100040: //RootNode
+    100042: Wall_Destruction_Wall_Broken
+    100044: Wall_Middle
+    400000: Pieces_1
+    400002: Pieces_10
+    400004: Pieces_11
+    400006: Pieces_12
+    400008: Pieces_13
+    400010: Pieces_14
+    400012: Pieces_15
+    400014: Pieces_16
+    400016: Pieces_17
+    400018: Pieces_18
+    400020: Pieces_19
+    400022: Pieces_2
+    400024: Pieces_20
+    400026: Pieces_3
+    400028: Pieces_4
+    400030: Pieces_5
+    400032: Pieces_6
+    400034: Pieces_7
+    400036: Pieces_8
+    400038: Pieces_9
+    400040: //RootNode
+    400042: Wall_Destruction_Wall_Broken
+    400044: Wall_Middle
+    2100000: lambert6SG
+    2100002: initialShadingGroup
+    2100004: Archer_3SG
+    2300000: Pieces_1
+    2300002: Pieces_10
+    2300004: Pieces_11
+    2300006: Pieces_12
+    2300008: Pieces_13
+    2300010: Pieces_14
+    2300012: Pieces_15
+    2300014: Pieces_16
+    2300016: Pieces_17
+    2300018: Pieces_18
+    2300020: Pieces_19
+    2300022: Pieces_2
+    2300024: Pieces_20
+    2300026: Pieces_3
+    2300028: Pieces_4
+    2300030: Pieces_5
+    2300032: Pieces_6
+    2300034: Pieces_7
+    2300036: Pieces_8
+    2300038: Pieces_9
+    2300040: Wall_Destruction_Wall_Broken
+    3300000: Pieces_1
+    3300002: Pieces_10
+    3300004: Pieces_11
+    3300006: Pieces_12
+    3300008: Pieces_13
+    3300010: Pieces_14
+    3300012: Pieces_15
+    3300014: Pieces_16
+    3300016: Pieces_17
+    3300018: Pieces_18
+    3300020: Pieces_19
+    3300022: Pieces_2
+    3300024: Pieces_20
+    3300026: Pieces_3
+    3300028: Pieces_4
+    3300030: Pieces_5
+    3300032: Pieces_6
+    3300034: Pieces_7
+    3300036: Pieces_8
+    3300038: Pieces_9
+    3300040: Wall_Destruction_Wall_Broken
+    4300000: Pieces_1
+    4300002: Pieces_2
+    4300004: Pieces_3
+    4300006: Pieces_4
+    4300008: Pieces_5
+    4300010: Pieces_6
+    4300012: Pieces_7
+    4300014: Pieces_8
+    4300016: Pieces_9
+    4300018: Pieces_10
+    4300020: Pieces_11
+    4300022: Pieces_12
+    4300024: Pieces_13
+    4300026: Pieces_14
+    4300028: Pieces_15
+    4300030: Pieces_16
+    4300032: Pieces_17
+    4300034: Pieces_18
+    4300036: Pieces_19
+    4300038: Pieces_20
+    4300040: Wall_Destruction_Wall_Broken
+  externalObjects: {}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    preserveHierarchy: 0
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    previousCalculatedGlobalScale: 1
+    hasPreviousCalculatedGlobalScale: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
