@@ -4,13 +4,23 @@ using UnityEngine;
 
 public class PiecesFadeOut : MonoBehaviour {
 
-    MeshRenderer meshRenderer;
+    public Material materialToFade;
+    public float fadeTime;
 
     private bool fadingout = false;
+    private float fadeTimer;
 
-    void Start () {
-        meshRenderer = this.GetComponent<MeshRenderer>();
-        meshRenderer.sharedMaterial.SetFloat("_Amount", 0f);
+    private const string AMOUNT = "_Amount";
+
+    private void Awake()
+    {
+        materialToFade.SetFloat(AMOUNT, 0f);
+        enabled = false;
+    }
+
+    private void OnEnable () {
+        materialToFade.SetFloat(AMOUNT, 0f);
+        fadeTimer = fadeTime;
     }
 
     IEnumerator FadeOut()
@@ -20,7 +30,7 @@ public class PiecesFadeOut : MonoBehaviour {
 
         for (float i = 0; i < Random.Range(0.7f, 0.9f); i += 0.005f)
         {
-            meshRenderer.sharedMaterial.SetFloat("_Amount", i);
+            //meshRenderer.sharedMaterial.SetFloat("_Amount", i);
             yield return new WaitForSeconds(0.05f);
         }
         Destroy(gameObject);
@@ -28,15 +38,26 @@ public class PiecesFadeOut : MonoBehaviour {
 
     public void startFading()
     {
-        StartCoroutine("FadeOut");
+        //StartCoroutine("FadeOut");
     }
 
     public void Update()
     {
-        if (!fadingout && this.isActiveAndEnabled)
+        if(fadeTimer > 0)
         {
-            startFading();
-            fadingout = true;
+            fadeTimer -= Time.deltaTime;
+            float value = 1.0f - (fadeTimer / fadeTime);
+            materialToFade.SetFloat(AMOUNT, value);
         }
+        else
+        {
+            gameObject.SetActive(false);
+        }
+
+        //if (!fadingout && this.isActiveAndEnabled)
+        //{
+        //    startFading();
+        //    fadingout = true;
+        //}
     }
 }
