@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab066a352b616a748a3291d308d8c345, type: 3}
+  m_Name: ArrowAttack
+  m_EditorClassIdentifier: 
+  attackType: 1
+  genericDamagePoints: 25
+  damagePoints:
+  - attackableType: 0
+    damagePoints: 35
+  - attackableType: 1
+    damagePoints: 25
+  - attackableType: 2
+    damagePoints: 40
+  cadence: 0.3
+  cadenceVariation: 0.25
+  actionRadius: 50
+  adjustCloutByDistance: 0
+  cloutByDistance:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  adjustCloutByFacingDirection: 0
+  cloutByFacingDirection:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  allowMishits: 0
+  mishitProbabilityByDistance:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  maxMishitsInARow: 2
+  allowCloutVariationByChance: 1
+  cloutVariationByChance: 0.1
+  attackedWithText: Arrow
+  startSpeed: 25
+  aimMode: 2
+  accuracyMode: 0
+  accuracyVariationMode: 0
+  constantAccuracy: 1
+  dynamicAccuracy:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  adjustCloutByHitImpulse: 0
