@@ -7,10 +7,17 @@ ModelImporter:
     400000: //RootNode
     2100000: Leaves
     2100002: Wood
+    2100004: lambert1
     2300000: //RootNode
     3300000: //RootNode
     4300000: Tree_2
-  externalObjects: {}
+    4300002: pCone3
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert1
+    second: {fileID: 2100000, guid: a4ffdc853c17b364882d2f3fe522aff4, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
@@ -60,7 +67,7 @@ ModelImporter:
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
     secondaryUVPackMargin: 4
-    useFileScale: 1
+    useFileScale: 0
     previousCalculatedGlobalScale: 1
     hasPreviousCalculatedGlobalScale: 0
   tangentSpace:

@@ -1,23 +1,15 @@
 fileFormatVersion: 2
-guid: 5d5f70903a5a7cd4aa24366a9b5c31a4
+guid: 1d5062b9048438247a14fc40b0aa94f1
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
     100000: //RootNode
     400000: //RootNode
-    2100000: Leaves
-    2100002: Wood
-    2100004: Tree
+    2100000: No Name
     2300000: //RootNode
     3300000: //RootNode
-    4300000: Tree
-    4300002: Cube
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Tree
-    second: {fileID: 2100000, guid: a4ffdc853c17b364882d2f3fe522aff4, type: 2}
+    4300000: Plane
+  externalObjects: {}
   materials:
     importMaterials: 1
     materialName: 0
@@ -67,7 +59,7 @@ ModelImporter:
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
     secondaryUVPackMargin: 4
-    useFileScale: 0
+    useFileScale: 1
     previousCalculatedGlobalScale: 1
     hasPreviousCalculatedGlobalScale: 0
   tangentSpace:

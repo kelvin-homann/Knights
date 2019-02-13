@@ -1,23 +1,26 @@
 fileFormatVersion: 2
-guid: 5d5f70903a5a7cd4aa24366a9b5c31a4
+guid: fba2b022d5af963479c500a04994bd06
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
     100000: //RootNode
     400000: //RootNode
-    2100000: Leaves
-    2100002: Wood
-    2100004: Tree
+    2100000: Dirt
+    2100002: Grass
     2300000: //RootNode
     3300000: //RootNode
-    4300000: Tree
-    4300002: Cube
+    4300000: Edge_Right
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Tree
-    second: {fileID: 2100000, guid: a4ffdc853c17b364882d2f3fe522aff4, type: 2}
+      name: Dirt
+    second: {fileID: 2100000, guid: 875be65dd4892784da844f9804a1fe85, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Grass
+    second: {fileID: 2100000, guid: 81d7cd3c766ced941bb59e324b329137, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
@@ -56,7 +59,7 @@ ModelImporter:
     importCameras: 1
     importLights: 1
     swapUVChannels: 0
-    generateSecondaryUV: 0
+    generateSecondaryUV: 1
     useFileUnits: 1
     optimizeMeshForGPU: 1
     keepQuads: 0
@@ -67,7 +70,7 @@ ModelImporter:
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
     secondaryUVPackMargin: 4
-    useFileScale: 0
+    useFileScale: 1
     previousCalculatedGlobalScale: 1
     hasPreviousCalculatedGlobalScale: 0
   tangentSpace:
