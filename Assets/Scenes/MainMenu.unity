@@ -513,6 +513,26 @@ Prefab:
       propertyPath: m_AABB.m_Center.y
       value: -0.7334342
       objectReference: {fileID: 0}
+    - target: {fileID: 183149241543616638, guid: e295269755cc4754c91815815ec3cf37,
+        type: 2}
+      propertyPath: m_ExternalAcceleration.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 183149241543616638, guid: e295269755cc4754c91815815ec3cf37,
+        type: 2}
+      propertyPath: m_RandomAcceleration.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 183149241543616638, guid: e295269755cc4754c91815815ec3cf37,
+        type: 2}
+      propertyPath: m_RandomAcceleration.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 183149241543616638, guid: e295269755cc4754c91815815ec3cf37,
+        type: 2}
+      propertyPath: m_ExternalAcceleration.y
+      value: 0.5
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e295269755cc4754c91815815ec3cf37, type: 2}
   m_IsPrefabAsset: 0
