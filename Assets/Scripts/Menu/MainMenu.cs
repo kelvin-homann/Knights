@@ -17,7 +17,7 @@ public class MainMenu : MonoBehaviour {
         if (!keypressed)
         {
             // Replace with Controller Input System
-            if (Input.GetKeyDown(KeyCode.G))
+            if (Input.GetKeyDown(KeyCode.Space))
             {
                 keypressed = true;
                 StartText.SetActive(false);
