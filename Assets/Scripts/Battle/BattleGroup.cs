@@ -27,16 +27,19 @@ public class BattleGroup : MonoBehaviour
     public int BattleGroupId { get { return battleGroupId; } set {} }
     public DateTime CreationDateTime { get; protected set; }
 
-    //public BattleGroup(int affiliation, EDeploymentType deployment)
-    //{
-    //    Initialize(affiliation, deployment);
-    //}
-
     private void Awake()
     {
         Initialize(affiliation, deployment);
     }
 
+    /// <summary>
+    /// Initilized this battle group and sets its constant affiliation and initial 
+    /// but mutable deployment.
+    /// </summary>
+    /// <param name="affiliation">The affiliation that future members of this group 
+    /// belong to</param>
+    /// <param name="deployment">The initial deployment that this group is going
+    /// to pursue</param>
     public void Initialize(int affiliation, EDeploymentType deployment)
     {
         if(initialized)
@@ -63,6 +66,10 @@ public class BattleGroup : MonoBehaviour
         UpdateCenterPoint();
     }
 
+    /// <summary>
+    /// Adds the specified character battle controller to this group.
+    /// </summary>
+    /// <param name="character">The character battle controller to be added</param>
     public void AddCharacter(CharacterBattleController character)
     {
         if(!characters.Contains(character))
@@ -73,6 +80,10 @@ public class BattleGroup : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Removes the given character battle controller from this group.
+    /// </summary>
+    /// <param name="character">The character battle controller to be removed</param>
     public void RemoveCharacter(CharacterBattleController character)
     {
         if(characters.Contains(character))
@@ -86,26 +97,55 @@ public class BattleGroup : MonoBehaviour
             DestroyGameObjectGuided();
     }
 
+    /// <summary>
+    /// Checks whether or not a given character battle controller is member of this group.
+    /// </summary>
+    /// <param name="character">The character battle controller to check</param>
+    /// <returns>True if the specified character battle controller is member of this 
+    /// group</returns>
     public bool ContainsCharacter(CharacterBattleController character)
     {
         return character != null && characters != null && characters.Contains(character);
     }
 
+    /// <summary>
+    /// Returns a list of of members (i.e. character battle controllers) that belong to 
+    /// this group.
+    /// </summary>
+    /// <returns>An actual list (copy) of members that are in this group</returns>
     public List<CharacterBattleController> GetCharacters()
     {
         return characters.ToList<CharacterBattleController>();
     }
 
+    /// <summary>
+    /// Returns the number of members (i.e. character battle controllers) that belong to 
+    /// this group.
+    /// </summary>
+    /// <returns>The actual number of members that are in this group</returns>
     public int GetCharacterCount()
     {
         return characters != null ? characters.Count : -1;
     }
 
+    /// <summary>
+    /// Returns the maximum visibility radius (i.e. range of vision or reconaissance range) 
+    /// of this group.
+    /// </summary>
+    /// <returns>The visibility radius in unit length</returns>
     public float GetMaximumVisibilityRadius()
     {
         return maximumVisibilityRadius;
     }
 
+    /// <summary>
+    /// Merges this battle group with another one. This will take all of the members of
+    /// the other group and adds them to this group.
+    /// </summary>
+    /// <param name="other">The other group to merge this group with</param>
+    /// <param name="clearOther">Whether or not to remove all members from the other 
+    /// group's list of characters</param>
+    /// <returns>The number of newly added members to this group</returns>
     public int Merge(BattleGroup other, bool clearOther)
     {
         if(other == null || other.characters == null || other.characters.Count == 0)

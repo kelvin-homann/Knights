@@ -17,7 +17,7 @@ MonoBehaviour:
   - attackableType: 0
     damagePoints: 70
   - attackableType: 1
-    damagePoints: 25
+    damagePoints: 20
   - attackableType: 2
     damagePoints: 15
   cadence: 0.8

@@ -87,19 +87,15 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
 
     private void Start()
     {
-        //if(hitIndicatorMaterial == null)
-        //{
-        //    string hitIndicatorMaterialLocation = "User/Materials/HitIndicatorMaterial";
-        //    hitIndicatorMaterial = Resources.Load<Material>(hitIndicatorMaterialLocation);
-        //    if(hitIndicatorMaterial == null)
-        //        LogSystem.Log(ELogMessageType.ResourceLoading, "error: could not find or load hit indicator material at location <color=white>{0}</color>",
-        //            hitIndicatorMaterialLocation);
-        //}
-
         animator = GetComponentInChildren<Animator>();
         audioSource = GetComponentInChildren<AudioSource>();
         audioSourceGameObject = audioSource.gameObject;
-        voicePitch = Random.Range(0.8f, 1.1f);
+        
+        if(attackableType == EAttackableType.CharacterHeavy)
+            voicePitch = Random.Range(0.5f, 0.65f);
+        else
+            voicePitch = Random.Range(0.8f, 1.1f);
+
         audioSource.pitch = voicePitch;
 
         InitializeHealthIndicator();
@@ -223,11 +219,9 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
             if(attackData.AttackDefinition.attackedWithText.Length > 0)
                 attackedWithText = attackData.AttackDefinition.attackedWithText;
 
-            //StartCoroutine(SetHitMaterial(hitIndicatorMaterialTime));
             SetHitMaterial();
             PlayWoodHitSound();
             PlayYelpSound();
-            //StartCoroutine(PlayYelpSoundDelayed(0.2f));
 
             if(isLethal)
             {
@@ -256,7 +250,7 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
     public void OnDestruct(Attack attackData)
     {
         // only do this if there is a valid attack and if the attacker still exists
-        if(attackData != null && attackData.Attacker != null)
+        if(attackData != null && attackData.Attacker != null && attackData.Attacker.gameObject != null)
         {
             CharacterBattleController attacker = attackData.Attacker;
 
@@ -308,12 +302,6 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
     public void AssignAttackTarget(GameObject attackTarget)
     {
         this.attackTarget = attackTarget;
-
-        DebugCharacterMovementController movementController = GetComponent<DebugCharacterMovementController>();
-        if(movementController != null)
-        {
-            movementController.movementTarget = attackTarget;
-        }
     }
 
     private void ExecuteAttack(GameObject attackTarget)
@@ -355,27 +343,12 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
 
         if(attackResult == EAttackResult.Succeeded_Damaged || attackResult == EAttackResult.Succeeded_Destroyed || attackResult == EAttackResult.Pending)
         {
-            attacksTotal++;
-
             // switch attack animation on
-            //animator.ResetTrigger("Attacked");
-            //animator.SetTrigger("Attacked");
             animator.SetBool("PerformAttack", true);
             Invoke("PlayStrikeOutSounds", 0.35f);
             StartCoroutine(TransmitAttackDelayed(attackable, attackData, 0.55f));
 
-            //switch(attackData.AttackType)
-            //{
-            //    case EAttackType.Melee:
-            //        // immediately exert attack on target
-            //        attackable.OnAttack(attackData);
-            //        break;
-
-            //    case EAttackType.Projectile:
-            //        // launch projectile and let it exert the attack on target or another IAttackable
-            //        LaunchProjectile(attackData);
-            //        break;
-            //}
+            attacksTotal++;
         }
         else
         {
@@ -435,68 +408,25 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
         }
 
         // if actual attack target was destroyed request a new target from the battle manager
-        if(attackData.AttackResult == EAttackResult.Succeeded_Destroyed && attackTarget.Equals(attackData.AttackTarget) && false)
-        {
-            CharacterBattleController lastOpponentBattleController = attackData.AttackTarget.GetComponent<CharacterBattleController>();
-            CharacterBattleController newOpponentBattleController = null;
-            if(BattleManager.GetInstance().RequestNewAttackTarget(this, lastOpponentBattleController, out newOpponentBattleController,
-                EOpponentSelectionMethod.MostSignificantOpponent))
-            {
-                attackTarget = newOpponentBattleController.gameObject;
-#if DEBUG
-                LogSystem.Log(ELogMessageType.BattleControllerTargetAssigning, "{0} received <color=white>{1}</color> as its new target from the battle manager", name, attackTarget.name);
-#endif
-            }
-            else
-            {
-#if DEBUG
-                LogSystem.Log(ELogMessageType.BattleControllerTargetAssigning, "{0} did not receive a new target. Opponent battle group is either destroyed or no opponent battle controller is in reach", name);
-#endif
-            }
-        }
-
-        // if attack target was destroyed and we have to automatically attack a next target
-        //if(attackData.AttackResult == EAttackResult.Succeeded_Destroyed && automaticallyAttackNextTarget)
-        //{
-        //    // determine battle controller of attack target
-        //    CharacterBattleController enemyBattleController = attackData.AttackTarget.GetComponent<CharacterBattleController>();
-        //    if(enemyBattleController != null)
-        //    {
-        //        // determine battle group of enemy battle controller
-        //        BattleGroup enemyBattleGroup = enemyBattleController.assignedBattleGroup;
-        //        if(enemyBattleGroup != null)
-        //        {
-        //            // get all characters in that battle group
-        //            List<CharacterBattleController> enemyBattleControllersInSameGroup = enemyBattleGroup.GetCharacters();
-        //            // remove the recently destroyed battle controllers (will only get removed after this method call)
-        //            enemyBattleControllersInSameGroup.Remove(enemyBattleController);
-
-        //            if(enemyBattleControllersInSameGroup.Count > 0)
-        //            {
-        //                CharacterBattleController closestBattleController = enemyBattleControllersInSameGroup[0];
-        //                float minDistance = float.MaxValue;
-
-        //                // run through all battle controllers in this battle group and determine the closest in respect to this attacker
-        //                foreach(CharacterBattleController battleController in enemyBattleControllersInSameGroup)
-        //                {
-        //                    float distance = Vector3.Distance(transform.position, battleController.transform.position);
-        //                    if(distance < minDistance)
-        //                    {
-        //                        minDistance = distance;
-        //                        closestBattleController = battleController;
-        //                    }
-        //                }
-
-        //                // set the gameobject of the closest battle controller as the new attack target
-        //                if(closestBattleController != null)
-        //                {
-        //                    attackTarget = closestBattleController.gameObject;
-        //                    Debug.LogFormat("<color=white>{0}</color> chose {1} as its new target", name, attackTarget.name);
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
+//        if(attackData.AttackResult == EAttackResult.Succeeded_Destroyed && attackTarget.Equals(attackData.AttackTarget))
+//        {
+//            CharacterBattleController lastOpponentBattleController = attackData.AttackTarget.GetComponent<CharacterBattleController>();
+//            CharacterBattleController newOpponentBattleController = null;
+//            if(BattleManager.GetInstance().RequestNewAttackTarget(this, lastOpponentBattleController, out newOpponentBattleController,
+//                EOpponentSelectionMethod.MostSignificantOpponent))
+//            {
+//                attackTarget = newOpponentBattleController.gameObject;
+//#if DEBUG
+//                LogSystem.Log(ELogMessageType.BattleControllerTargetAssigning, "{0} received <color=white>{1}</color> as its new target from the battle manager", name, attackTarget.name);
+//#endif
+//            }
+//            else
+//            {
+//#if DEBUG
+//                LogSystem.Log(ELogMessageType.BattleControllerTargetAssigning, "{0} did not receive a new target. Opponent battle group is either destroyed or no opponent battle controller is in reach", name);
+//#endif
+//            }
+//        }
 
         switch(attackData.AttackResult)
         {
@@ -549,7 +479,7 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
 
     private void SetHitMaterial()
     {
-        if(hitIndicatorMaterial == null || destroyed)
+        if(!DisplaySettings.renderHitIndicator || hitIndicatorMaterial == null || destroyed)
             return;
 
         meshRenderers = GetComponentsInChildren<MeshRenderer>();
@@ -581,29 +511,6 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
 
         hit = false;
     }
-
-    //private IEnumerator SetHitMaterial(float forSeconds)
-    //{
-    //    if(hitIndicatorMaterial == null)
-    //        yield break;
-
-    //    MeshRenderer[] meshRenderers = GetComponentsInChildren<MeshRenderer>();
-    //    Dictionary<MeshRenderer, Material> originalMaterials = new Dictionary<MeshRenderer, Material>();
-
-    //    // get and store original materials of all submesh renderers and then set the hit indicator material
-    //    foreach(MeshRenderer meshRenderer in meshRenderers) {
-    //        originalMaterials.Add(meshRenderer, meshRenderer.material);
-    //        meshRenderer.material = hitIndicatorMaterial;
-    //    }
-
-    //    yield return new WaitForSeconds(forSeconds);
-    //    hit = false;
-
-    //    // set original materials to their corresponding submesh renderers
-    //    foreach(MeshRenderer meshRenderer in meshRenderers) {
-    //        meshRenderer.material = originalMaterials[meshRenderer];
-    //    }
-    //}
 
     public void AssignBattleGroup(BattleGroup battleGroup)
     {
@@ -688,15 +595,6 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
         if(audioSource == null)
             return;
         audioSource.PlayOneShot(AudioManager.GetRandomYelpSound(), 0.1f);
-    }
-
-    private IEnumerator PlayYelpSoundDelayed(float delay)
-    {
-        if(audioSource == null)
-            yield break;
-        yield return new WaitForSeconds(delay);
-        audioSource.PlayOneShot(AudioManager.GetRandomYelpSound(), 0.1f);
-        yield return true;
     }
 
     private void PlayWoodHitSound()

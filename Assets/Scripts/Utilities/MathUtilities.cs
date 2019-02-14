@@ -29,4 +29,9 @@ public static class MathUtilities
         else
             return null;
     }
+
+    public static float VectorDistanceSquared(Vector3 a, Vector3 b)
+    {
+        return (a - b).sqrMagnitude;
+    }
 }

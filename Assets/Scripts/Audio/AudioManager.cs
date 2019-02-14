@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,6 +17,8 @@ public class AudioManager : MonoBehaviour
     private static int lastWooshSoundIndex = 0;
     private static int lastWoodHitSoundIndex = 0;
 
+    private static bool destroyed = false;
+
     [ReadOnly] public bool audioClipsLoaded = false;
 
     public static AudioManager Instance { get; protected set; }
@@ -24,13 +27,37 @@ public class AudioManager : MonoBehaviour
     {
         if(instance == null)
             instance = this;
-        else if(instance != this)
+        else if(instance != this) {
             Destroy(gameObject);
+            return;
+        }
 
         if(!audioClipsLoaded)
             LoadAudioClips();
     }
 
+    private void OnDestroy()
+    {
+        destroyed = true;
+    }
+
+    /// <summary>
+    /// Gets the singleton instance of the only AudioManager
+    /// </summary>
+    /// <returns></returns>
+    public static AudioManager GetInstance()
+    {
+        if(instance == null && !destroyed)
+            throw new Exception("BattleManager.GetInstance(): Fatal Error: The Battle Manager has not yet been initialized. " +
+                "It needs to be a component of a GameObject. Maybe you need to make sure that the BattleManager script is above " +
+                "Default Time in Project Settings/Script Execution Order");
+        return instance;
+    }
+
+    /// <summary>
+    /// Returns a random grunt interjection sound as an AudioClip
+    /// </summary>
+    /// <returns></returns>
     public static AudioClip GetRandomGruntSound()
     {
         if(gruntSounds == null || gruntSounds.Count == 0)
@@ -41,6 +68,10 @@ public class AudioManager : MonoBehaviour
         return gruntSounds[index];
     }
 
+    /// <summary>
+    /// Returns a random yelp interjection sound as an AudioClip
+    /// </summary>
+    /// <returns></returns>
     public static AudioClip GetRandomYelpSound()
     {
         if(yelpSounds == null || yelpSounds.Count == 0)
@@ -51,6 +82,10 @@ public class AudioManager : MonoBehaviour
         return yelpSounds[index];
     }
 
+    /// <summary>
+    /// Returns a random woosh (air resistance) sound as an AudioClip
+    /// </summary>
+    /// <returns></returns>
     public static AudioClip GetRandomWooshSound()
     {
         if(wooshSounds == null || wooshSounds.Count == 0)
@@ -61,6 +96,10 @@ public class AudioManager : MonoBehaviour
         return wooshSounds[index];
     }
 
+    /// <summary>
+    /// Returns a random wood hit sound as an AudioClip
+    /// </summary>
+    /// <returns></returns>
     public static AudioClip GetRandomWoodHitSound()
     {
         if(woodHitSounds == null || woodHitSounds.Count == 0)
@@ -71,6 +110,12 @@ public class AudioManager : MonoBehaviour
         return woodHitSounds[index];
     }
 
+    /// <summary>
+    /// Returns a random index within the specified list with respect to the last used index.
+    /// This ensures that not the same sound is played several times in a row unless the 
+    /// provided list only contains one sound.
+    /// </summary>
+    /// <returns></returns>
     private static int GetRandomIndex<T>(int lastIndex, List<T> list)
     {
         if(list == null || list.Count == 0)
@@ -81,12 +126,17 @@ public class AudioManager : MonoBehaviour
         // get a new random index that is not the last index
         while(index == lastIndex && list.Count > 1)
         {
-            index = Random.Range(0, list.Count);
+            index = UnityEngine.Random.Range(0, list.Count);
         }
 
         return index;
     }
 
+    /// <summary>
+    /// Loads necessary sound files from the Resources folder, creates AudioClips from them
+    /// and stores them into managed lists of AudioClips.
+    /// </summary>
+    /// <returns></returns>
     private static void LoadAudioClips()
     {
         gruntSounds = new List<AudioClip>();

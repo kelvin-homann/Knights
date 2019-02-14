@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Name: Heavy
   m_EditorClassIdentifier: 
   maxHealthPoints: 110
-  visionRadius: 15
+  visionRadius: 7
   reactionTime: 1.2
   walkingSpeed: 1
   attackingSpeed: 2

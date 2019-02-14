@@ -17,9 +17,8 @@ public enum EOpponentSelectionMethod
 /// </summary>
 public class BattleManager : MonoBehaviour
 {
-    private const float battleGroupAssemblyDistance = 10f;
-    private const float battleGroupDisassemblyDistance = 12f;
-    private const float battleCombatAllocationDistance = 15f;
+    private const float battleGroupAssemblyDistance = 7f;
+    private const float battleGroupDisassemblyDistance = 10f;
     private const float battleGroupUpdateInterval = 0.5f;
 
     [ReadOnly]
@@ -36,15 +35,35 @@ public class BattleManager : MonoBehaviour
     private Dictionary<CharacterBattleController, CharacterBattleController> battleControllerPairings = new Dictionary<CharacterBattleController, CharacterBattleController>();
 
     private static Transform battleGroupsParent;
+    private static Transform charactersParent;
+    private static int nextCharacterId = 1;
 
-    public static BattleManager Instance { get; protected set; }
+    // character prefabs used for spawning
+    [Header("Character Prefabs")]
+    public GameObject knightGameObjectPrefab;
+    public GameObject archerGameObjectPrefab;
+    public GameObject heavyGameObjectPrefab;
+
+    // points used for spawning and navigating
+    [Header("Navigation Points")]
+    public GameObject[] spawnPoints;
+    public GameObject[] attackPoints;
+    public GameObject[] defensePoints;
+
+    // materials used for spawning and affiliation recognition
+    [Header("Common Materials")]
+    public Material[] affiliationColorsMaterials;
+
+    public static BattleManager Instance { get { return instance; } protected set {} }
 
     private void Awake()
     {
         if(instance == null)
             instance = this;
-        else if(instance != this)
+        else if(instance != this) {
             Destroy(gameObject);
+            return;
+        }
 
         // create parent object for battle groups
         if(battleGroupsParent == null)
@@ -52,11 +71,35 @@ public class BattleManager : MonoBehaviour
             GameObject battleGroupsParentGameObject = new GameObject("Battle Groups");
             battleGroupsParent = battleGroupsParentGameObject.transform;
         }
+
+        // create parent object for character battle controllers
+        if(charactersParent == null)
+        {
+            GameObject charactersParentGameObject = new GameObject("Characters");
+            charactersParent = charactersParentGameObject.transform;
+        }
+
+        SpawnInitialCharacters();
     }
 
     private void OnDestroy()
     {
         destroyed = true;
+    }
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Alpha1))
+            BattleManager.Instance.SpawnCharacter(EAttackableType.CharacterMedium, 0, EDeploymentType.Attack);
+
+        else if(Input.GetKeyDown(KeyCode.Alpha2))
+            BattleManager.Instance.SpawnCharacter(EAttackableType.CharacterMedium, 1, EDeploymentType.Attack);
+
+        else if(Input.GetKeyDown(KeyCode.Alpha3))
+            BattleManager.Instance.SpawnCharacter(EAttackableType.CharacterMedium, 2, EDeploymentType.Attack);
+
+        else if(Input.GetKeyDown(KeyCode.Alpha4))
+            BattleManager.Instance.SpawnCharacter(EAttackableType.CharacterMedium, 3, EDeploymentType.Attack);
     }
 
     private void FixedUpdate()
@@ -69,12 +112,6 @@ public class BattleManager : MonoBehaviour
             AssignBattleControllerPairings();
             nextBattleGroupUpdateRealtime = Time.realtimeSinceStartup + battleGroupUpdateInterval;
         }
-
-        // update center of mass of each battle group every frame
-        //foreach(BattleGroup battleGroup in battleGroups)
-        //{
-        //    battleGroup.UpdateCenterPoint();
-        //}
     }
 
     /// <summary>
@@ -117,25 +154,10 @@ public class BattleManager : MonoBehaviour
         BattleGroup battleGroup = null;
         if(battleGroupMemberAssignments.ContainsKey(battleController))
             battleGroup = battleGroupMemberAssignments[battleController];
+
+        // first of all remove the character battle controller from its battle group
         if(battleGroup != null)
-        {
-            //int battleGroupId = battleGroup.BattleGroupId;
-
-            // remove battle controller from its battle group
             battleGroup.RemoveCharacter(battleController);
-            //List<CharacterBattleController> battleGroupBattleControllers = battleGroup.GetCharacters();
-            //
-            // if the battle group is now empty remove the battle group and all remaining references
-            //if(battleGroupBattleControllers.Count == 0)
-            //{
-            //    battleGroupAssignments.Remove(battleController);
-            //    battleGroupsDictionary.Remove(battleGroup.battleGroupId);
-            //    battleGroups.Remove(battleGroup);
-            //    Destroy(battleGroup);
-
-            //    LogSystem.Log(ELogMessageType.BattleGroupDestroying, "destroyed battle group id {0}", battleGroupId);
-            //}
-        }
 
         // remove the battle controller from the list of managed battle controllers
         if(battleControllers.Contains(battleController))
@@ -204,6 +226,173 @@ public class BattleManager : MonoBehaviour
 
         LogSystem.Log(ELogMessageType.BattleManagerGroupUnregistering, "unregistered battle group <color=white>{0}</color>",
             battleGroup.name);
+    }
+
+    /// <summary>
+    /// Gets the predefined (attribute) spawn point of the given affiliation.
+    /// </summary>
+    /// <param name="affiliation">the affiliation in question</param>
+    /// <returns>the actual spawn point as a gameobject</returns>
+    public GameObject GetSpawnPoint(int affiliation)
+    {
+        return affiliation >= 0 && affiliation < spawnPoints.Length ? spawnPoints[affiliation] : null;
+    }
+
+    /// <summary>
+    /// Gets the predefined (attribute) attack point of the given affiliation.
+    /// </summary>
+    /// <param name="affiliation">the affiliation in question</param>
+    /// <returns>the actual attack point as a gameobject</returns>
+    public GameObject GetAttackPoint(int affiliation)
+    {
+        return affiliation >= 0 && affiliation < attackPoints.Length ? attackPoints[affiliation] : null;
+    }
+
+    /// <summary>
+    /// Gets the predefined (attribute) defense point of the given affiliation.
+    /// </summary>
+    /// <param name="affiliation">the affiliation in question</param>
+    /// <returns>the actual defense point as a gameobject</returns>
+    public GameObject GetDefensePoint(int affiliation)
+    {
+        return affiliation >= 0 && affiliation < defensePoints.Length ? defensePoints[affiliation] : null;
+    }
+
+    /// <summary>
+    /// Spawns a character of specified type into the given affiliation and deployment type and at the 
+    /// specified position.
+    /// </summary>
+    /// <param name="characterType">the type of character to spawn (only character considered!)</param>
+    /// <param name="affiliation">the affiliation to associate the new character with</param>
+    /// <param name="deploymentType">the deployment that the new character shall occupy</param>
+    public void SpawnCharacter(EAttackableType characterType, int affiliation, EDeploymentType deploymentType)
+    {
+        GameObject spawnPointGameObject = GetSpawnPoint(affiliation);
+
+        if(spawnPointGameObject == null)
+        {
+            LogSystem.Log(ELogMessageType.BattleControllerSpawning, 
+                "failed spawning new character battle controller for affiliation {0}. " + 
+                "There is no spawn point defined for this affiliation.", affiliation);
+            return;
+        }
+
+        Transform spawnPoint = spawnPointGameObject.transform;
+        SpawnCharacter(characterType, affiliation, deploymentType, spawnPoint.position);
+    }
+
+    /// <summary>
+    /// Spawns a character of specified type into the given affiliation and deployment type and at the 
+    /// specified position.
+    /// </summary>
+    /// <param name="characterType">the type of character to spawn (only character considered!)</param>
+    /// <param name="affiliation">the affiliation to associate the new character with</param>
+    /// <param name="deploymentType">the deployment that the new character shall occupy</param>
+    /// <param name="position">the world position at which to put the new character</param>
+    public void SpawnCharacter(EAttackableType characterType, int affiliation, EDeploymentType deploymentType,
+        Vector3 position)
+    {
+        GameObject newCharacter = null;
+        
+        // look what character type we need to spawn
+        switch(characterType)
+        {
+            case EAttackableType.CharacterMedium:
+                if(knightGameObjectPrefab != null)
+                {
+                    // instantiate new character gameobject from prefab
+                    newCharacter = Instantiate(knightGameObjectPrefab, charactersParent);
+                    newCharacter.name = string.Format("Knight {0}", nextCharacterId);
+                    newCharacter.transform.position = position;
+                    newCharacter.transform.LookAt(Vector3.zero);
+
+                    // get character battle controller of new character and assign base properties
+                    CharacterBattleController battleController = newCharacter.GetComponent<CharacterBattleController>();
+                    battleController.currentDeployment = deploymentType;
+                    battleController.affiliation = affiliation;
+
+                    nextCharacterId++;
+                }
+                break;
+        }
+
+        ChangeAffiliationColor(newCharacter, 0, affiliation);
+    }
+
+    /// <summary>
+    /// Changes the affiliation color of any game object that has renderers and used predefined materials.
+    /// </summary>
+    /// <param name="affiliatedObject">the gameobject that used an affiliation material</param>
+    /// <param name="fromAffiliation">the affiliation the object currently is associated with</param>
+    /// <param name="toAffiliation">the affiliation the object shall be associated with</param>
+    private void ChangeAffiliationColor(GameObject affiliatedObject, int fromAffiliation, int toAffiliation)
+    {
+        // abort if invalid character, no affiliation colors materials specified, affiliation is less than 0 or greater than 3
+        if(affiliatedObject == null || affiliationColorsMaterials.Length < 4 || fromAffiliation < 0 || fromAffiliation > 3 || 
+            toAffiliation < 0 || toAffiliation > 3 || fromAffiliation == toAffiliation)
+            return;
+
+        Material presentMaterial = affiliationColorsMaterials[fromAffiliation];
+        int numRenderers = 0;
+        int numMaterials = 0;
+        int numMaterialsReplaced = 0;
+
+        SkinnedMeshRenderer[] renderers = affiliatedObject.GetComponentsInChildren<SkinnedMeshRenderer>();
+        foreach(SkinnedMeshRenderer renderer in renderers)
+        {
+            numRenderers++;
+
+            Material[] sharedMaterialsCopy = renderer.sharedMaterials;
+            for(int i = 0; i < sharedMaterialsCopy.Length; i++)
+            {
+                numMaterials++;
+                if(sharedMaterialsCopy[i] == presentMaterial)
+                {
+                    sharedMaterialsCopy[i] = affiliationColorsMaterials[toAffiliation];
+                    numMaterialsReplaced++;
+                }
+            }
+
+            renderer.sharedMaterials = sharedMaterialsCopy;
+        }
+
+        MeshRenderer[] renderers2 = affiliatedObject.GetComponentsInChildren<MeshRenderer>();
+        foreach(MeshRenderer renderer in renderers2)
+        {
+            numRenderers++;
+
+            Material[] sharedMaterialsCopy = renderer.sharedMaterials;
+            for(int i = 0; i < sharedMaterialsCopy.Length; i++)
+            {
+                numMaterials++;
+                if(sharedMaterialsCopy[i] == presentMaterial)
+                {
+                    sharedMaterialsCopy[i] = affiliationColorsMaterials[toAffiliation];
+                    numMaterialsReplaced++;
+                }
+            }
+
+            renderer.sharedMaterials = sharedMaterialsCopy;
+        }
+
+        //LogSystem.Log("{0} materials in {1} renderers found; {2} materials replaced", numMaterials, 
+        //    numRenderers, numMaterialsReplaced);
+    }
+
+    /// <summary>
+    /// Spawns initial characters from placed SpawnPoints on the map.
+    /// </summary>
+    private void SpawnInitialCharacters()
+    {
+        // find all spawn points
+        SpawnPoint[] spawnPoints = FindObjectsOfType<SpawnPoint>();
+        foreach(SpawnPoint spawnPoint in spawnPoints)
+        {
+            if(spawnPoint != null && spawnPoint.affiliation >= 0 && spawnPoint.affiliation <= 3)
+                SpawnCharacter(spawnPoint.characterType, spawnPoint.affiliation, spawnPoint.deploymentType, 
+                    spawnPoint.transform.position);
+            Destroy(spawnPoint.gameObject);
+        }
     }
 
     /// <summary>
@@ -537,10 +726,11 @@ public class BattleManager : MonoBehaviour
             CharacterBattleController battleController = entry.Key;
             BattleGroup battleGroup = entry.Value;
 
-            float distanceToGroupCenter = Vector3.Distance(battleController.transform.position, battleGroup.centerPoint);
+            float distanceToGroupCenterSquared = MathUtilities.VectorDistanceSquared(battleController.transform.position, 
+                battleGroup.centerPoint);
 
             // if battle controller went outside battle disassembly distance
-            if(distanceToGroupCenter >= battleGroupDisassemblyDistance)
+            if(distanceToGroupCenterSquared >= battleGroupDisassemblyDistance * battleGroupDisassemblyDistance)
             {
                 // mark battle controller for removal from battle group assignments
                 battleControllersToUnassign.Add(battleController);
@@ -555,10 +745,11 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        // do the actual unassignment of marked battle controllers by removing them from the member assignments list
         foreach(CharacterBattleController battleController in battleControllersToUnassign)
             battleGroupMemberAssignments.Remove(battleController);
 
-        // create one man battle groups for all battle controllers that were not in assembly distance to any other battle controller
+        // create one man battle groups for all battle controllers that were not in assembly distance to any other battle controller or group
         // iterate through all battle controllers pair by pair
         for(int i = 0; i < battleControllers.Count; i++)
         {
@@ -600,6 +791,8 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     private void AssignBattleGroupPairings()
     {
+        ClearEmptyBattleGroupPairings();
+
         // run through all registered battle groups and find unengaged combat instigators
         for(int i = 0; i < battleGroups.Count; i++)
         {
@@ -622,10 +815,10 @@ public class BattleManager : MonoBehaviour
                 BattleGroup receiver = battleGroups[j];
 
                 float maximumVisibilityRadius = instigator.GetMaximumVisibilityRadius();
-                float distance = Vector3.Distance(instigator.centerPoint, receiver.centerPoint);
+                float distanceSquared = MathUtilities.VectorDistanceSquared(instigator.centerPoint, receiver.centerPoint);
 
                 // check if the instigator group spotted the receiver group (i.e. receiver group is within maximum visibility radius of instigator group)
-                if(distance <= maximumVisibilityRadius)
+                if(distanceSquared <= maximumVisibilityRadius * maximumVisibilityRadius)
                 {
                     battleGroupPairings.Add(instigator, receiver);
                 }
@@ -677,8 +870,9 @@ public class BattleManager : MonoBehaviour
                         continue;
 
                     // calculate squared distance between possible pairing's controllers
-                    Vector3 offset = instigatorBattleController.transform.position - receiverBattleController.transform.position;
-                    float distanceSquared = offset.sqrMagnitude;
+                    //Vector3 offset = instigatorBattleController.transform.position - receiverBattleController.transform.position;
+                    float distanceSquared = MathUtilities.VectorDistanceSquared(instigatorBattleController.transform.position, 
+                        receiverBattleController.transform.position);
 
                     // todo: calculate pairing score based on distance, current health of and effectiveness against opponent
 
@@ -693,18 +887,19 @@ public class BattleManager : MonoBehaviour
                 // if we have not yet found a fitting receiver battle controller then probably because all are already paired
                 if(mostFittingReceiverBattleController == null)
                 {
-                    // run through all receiver battle controllers that are paired to find the most suitable
+                    // run through all receiver battle controllers that are paired to find the most fitting
                     for(int j = 0; j < receiverBattleControllers.Count; j++)
                     {
                         CharacterBattleController receiverBattleController = receiverBattleControllers[j];
 
-                        // if the current receiver battle controller is already paired continue
+                        // if the current receiver battle controller is already an instigator itself continue
                         if(!battleControllerPairings.ContainsValue(receiverBattleController))
                             continue;
 
                         // calculate squared distance between possible pairing's controllers
-                        Vector3 offset = instigatorBattleController.transform.position - receiverBattleController.transform.position;
-                        float distanceSquared = offset.sqrMagnitude;
+                        //Vector3 offset = instigatorBattleController.transform.position - receiverBattleController.transform.position;
+                        float distanceSquared = MathUtilities.VectorDistanceSquared(instigatorBattleController.transform.position,
+                            receiverBattleController.transform.position);
 
                         // todo: calculate pairing score based on distance, current health of and effectiveness against opponent
 
@@ -725,6 +920,8 @@ public class BattleManager : MonoBehaviour
 
                     // assign each other as their attack targets
                     instigatorBattleController.AssignAttackTarget(mostFittingReceiverBattleController.gameObject);
+
+                    // avoid overwrite and only assign a new attack target to the receiver battle controller if it currently has none
                     if(mostFittingReceiverBattleController.attackTarget == null)
                         mostFittingReceiverBattleController.AssignAttackTarget(instigatorBattleController.gameObject);
 
@@ -734,5 +931,19 @@ public class BattleManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void ClearEmptyBattleGroupPairings()
+    {
+        List<BattleGroup> battleGroupKeysToRemove = new List<BattleGroup>();
+
+        foreach(KeyValuePair<BattleGroup, BattleGroup> pairing in battleGroupPairings)
+        {
+            if(pairing.Value == null)
+                battleGroupKeysToRemove.Add(pairing.Key);
+        }
+
+        foreach(BattleGroup battleGroupKey in battleGroupKeysToRemove)
+            battleGroupPairings.Remove(battleGroupKey);
     }
 }

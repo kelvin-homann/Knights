@@ -1218,7 +1218,6 @@ MonoBehaviour:
   movementTarget: {fileID: 0}
   followAttackTarget: 1
   momentaryVelocity: 0
-  dotTargetLookDirection: 0
 --- !u!114 &114561843927580708
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1376,7 +1375,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 1660842923506194}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.35
+  m_Radius: 0.5
   m_Speed: 2.3
   m_Acceleration: 20
   avoidancePriority: 50

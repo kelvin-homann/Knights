@@ -161,7 +161,7 @@ public class AttackDefinition : ScriptableObject
         }
 
         // if clout is basically zero don't take it to target.OnAttack()
-        if(baseClout < 0.01f)
+        if(baseClout < 0.1f)
         {
             attackResult = EAttackResult.Failed_VirtuallyIneffective;
             attackData = new Attack(attackType, attackResult, attacker, attackTarget, distanceToTarget, -1f, this);
@@ -179,6 +179,11 @@ public class AttackDefinition : ScriptableObject
         return effectiveDamagePoints;
     }
 
+    /// <summary>
+    /// Returns the gross damage points that this attack can exert on the given type of attackable.
+    /// </summary>
+    /// <param name="attackableType">The attackable type to be attacked with this attack</param>
+    /// <returns>The actual number of gross damage points without any deduction</returns>
     public float GetSpecificDamagePoints(EAttackableType attackableType)
     {
         foreach(AttackableDamagePointsEntry entry in damagePoints)

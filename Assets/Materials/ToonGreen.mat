@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: ToonRed
+  m_Name: ToonGreen
   m_Shader: {fileID: 4800000, guid: adc8f588a9d189f47b9e2777cda14757, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -77,7 +77,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _Color1: {r: 0.735849, g: 0.17843884, b: 0.14231041, a: 1}
+    - _Color1: {r: 0.12576002, g: 0.4339623, b: 0.10030261, a: 1}
     - _Color2: {r: 0.16, g: 0.128, b: 0.08533333, a: 1}
     - _Color3: {r: 1, g: 1, b: 1, a: 1}
     - _Color4: {r: 1, g: 1, b: 1, a: 1}

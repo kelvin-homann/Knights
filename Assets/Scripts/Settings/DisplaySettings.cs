@@ -14,6 +14,8 @@ public enum ESwitchState
 
 public static class DisplaySettings
 {
-    public static bool renderHealthBars = true;
+    public static bool renderHealthBars = false;
     public static ESwitchState renderHealthBarsState = ESwitchState.On;
+
+    public static bool renderHitIndicator = false;
 }

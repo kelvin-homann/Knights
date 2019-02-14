@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Name: Archer
   m_EditorClassIdentifier: 
   maxHealthPoints: 90
-  visionRadius: 30
+  visionRadius: 20
   reactionTime: 0.3
   walkingSpeed: 1.2
   attackingSpeed: 3
