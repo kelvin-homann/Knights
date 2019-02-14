@@ -4,37 +4,30 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour {
-    public float transitionSpeed;
-    public Transform[] targets;
-    Transform currentTarget;
-    public Camera camera;
+    [Header("UI")]
+    public GameObject StartText;
 
-    public void Start()
-    {
-        currentTarget = targets[0];
-    }
+    [Header("Camera Movement")]
+    public float smoothTime = 2F;
+    private Vector3 velocity = Vector3.zero;
+    Vector3 targetPosition = new Vector3(9f, 5.7f, 0f);
+    bool keypressed = false;
 
-    public void SelectPlayers()
-    {
-        // Move Camera to Flags      
-        currentTarget = targets[1];
-    }
-
-    public void ExitGame()
-    {
-        Application.Quit();
-    }
-
-    private void LateUpdate()
-    {
-        camera.transform.position = Vector3.Lerp(transform.position, currentTarget.position, Time.deltaTime * transitionSpeed);
-        Vector3 currentAngle = new Vector3(Mathf.LerpAngle(camera.transform.rotation.eulerAngles.x, 
-            currentTarget.transform.rotation.eulerAngles.x, Time.deltaTime * transitionSpeed),
-            Mathf.LerpAngle(camera.transform.rotation.eulerAngles.y, currentTarget.transform.rotation.eulerAngles.y,
-            Time.deltaTime * transitionSpeed), Mathf.LerpAngle(camera.transform.rotation.eulerAngles.z, currentTarget.transform.rotation.eulerAngles.z,
-            Time.deltaTime * transitionSpeed));
-
-        camera.transform.eulerAngles = currentAngle;
-
+    void Update () {
+        if (!keypressed)
+        {
+            // Replace with Controller Input System
+            if (Input.GetKeyDown(KeyCode.G))
+            {
+                keypressed = true;
+                StartText.SetActive(false);
+            }
+        }
+        else
+        {
+            transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, smoothTime);
+        } 
+        
+        // Add player Selection Logic
     }
 }
