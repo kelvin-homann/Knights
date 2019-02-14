@@ -1530,27 +1530,27 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: model_Body1
-    second: {fileID: 2100000, guid: eef76707255e7ca45ac5258adafdc3d6, type: 2}
+    second: {fileID: 2100000, guid: 6f4316661a42ef8479fa7b414354fe41, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: model_Face1
-    second: {fileID: 2100000, guid: 22d8c5c0e894dac449f684b50c87664c, type: 2}
+    second: {fileID: 2100000, guid: f4cbb6dd87499d341bfa7bfacbfd0bfe, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: model_Metall_light
-    second: {fileID: 2100000, guid: eef76707255e7ca45ac5258adafdc3d6, type: 2}
+    second: {fileID: 2100000, guid: 5266eace2becd7041b283236e9853b6f, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: model_Team_Color
-    second: {fileID: 2100000, guid: 095f9e38539406f4bb77314f1a5d8e60, type: 2}
+    second: {fileID: 2100000, guid: ed0623275d0540e4f940473d82c7e5df, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: model_Wood
-    second: {fileID: 2100000, guid: b784de8535453bb4f9ad987b323baa78, type: 2}
+    second: {fileID: 2100000, guid: 362cd153f4eafb943a167bafa23644bc, type: 2}
   materials:
     importMaterials: 1
     materialName: 0

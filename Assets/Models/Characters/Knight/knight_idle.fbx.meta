@@ -64,7 +64,42 @@ ModelImporter:
     7400000: Knight_idle
     9500000: //RootNode
     13700000: Knight_3
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Body
+    second: {fileID: 2100000, guid: b3d61f8563d6c934cbbe78719dd89f75, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Eyes
+    second: {fileID: 2100000, guid: f4cbb6dd87499d341bfa7bfacbfd0bfe, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Helmet1
+    second: {fileID: 2100000, guid: 626db535f131c004ebe818a426ed2848, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Helmet_Deco
+    second: {fileID: 2100000, guid: ed0623275d0540e4f940473d82c7e5df, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Shield1
+    second: {fileID: 2100000, guid: 626db535f131c004ebe818a426ed2848, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Sword1
+    second: {fileID: 2100000, guid: 626db535f131c004ebe818a426ed2848, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wood
+    second: {fileID: 2100000, guid: 362cd153f4eafb943a167bafa23644bc, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
