@@ -90,6 +90,11 @@ public class BattleManager : MonoBehaviour
 
     private void Update()
     {
+        //CheckDebugInput();
+    }
+
+    private void CheckDebugInput()
+    {
         if(Input.GetKeyDown(KeyCode.Alpha1))
             SpawnCharacter(EAttackableType.CharacterMedium, 0, EDeploymentType.Attack);
 
