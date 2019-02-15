@@ -17,3 +17,5 @@ MonoBehaviour:
   walkingSpeed: 1.2
   attackingSpeed: 2.4
   turningSpeed: 110
+  effortSounds: {fileID: 11400000, guid: 0096b8227c8462043b78c39c5f04204e, type: 2}
+  effortSoundsDelay: 0.35

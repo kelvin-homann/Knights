@@ -21,9 +21,9 @@ public class AudioManager : MonoBehaviour
 
     [ReadOnly] public bool audioClipsLoaded = false;
 
-    public static AudioManager Instance { get; protected set; }
+    public static AudioManager Instance { get { return instance; } protected set {} }
 
-    void Start()
+    void Awake()
     {
         if(instance == null)
             instance = this;
@@ -48,8 +48,8 @@ public class AudioManager : MonoBehaviour
     public static AudioManager GetInstance()
     {
         if(instance == null && !destroyed)
-            throw new Exception("BattleManager.GetInstance(): Fatal Error: The Battle Manager has not yet been initialized. " +
-                "It needs to be a component of a GameObject. Maybe you need to make sure that the BattleManager script is above " +
+            throw new Exception("AudioManager.GetInstance(): Fatal Error: AudioManager has not yet been initialized. " +
+                "It needs to be a component of a GameObject. Maybe you need to make sure that the AudioManager script is above " +
                 "Default Time in Project Settings/Script Execution Order");
         return instance;
     }

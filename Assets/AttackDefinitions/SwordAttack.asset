@@ -138,3 +138,6 @@ MonoBehaviour:
   allowCloutVariationByChance: 1
   cloutVariationByChance: 0.1
   attackedWithText: Sword
+  executionSound: {fileID: 11400000, guid: 99d610288a87ba04da63a2b529b5ec27, type: 2}
+  executionSoundDelay: 0
+  hitSound: {fileID: 11400000, guid: 07a42e887de736647938f4675d2d1bde, type: 2}

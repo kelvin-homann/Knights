@@ -2,59 +2,48 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Castle : MonoBehaviour {
-    public int health = 100;
-
+public class Castle : MonoBehaviour
+{
+    public float healthPointsRelative = 1f;
     public GameObject intact;
     public GameObject damaged;
     public GameObject ruin;
     public GameObject pieces;
-
     public ParticleSystem particles;
 
-    private bool destroyed_once = false;
-    private bool destroyed_twice = false;
+    private int destructionState = 0;
 
-    void Start () {
+    private void Start()
+    {
         particles.Stop();
-        // Disabling the Damaged Models
+
+        // show intact and hide damaged models
         intact.SetActive(true);
         damaged.SetActive(false);
         ruin.SetActive(false);
         pieces.SetActive(false);
     }
-	
-	void Update () {
-        if (health < 0)
-            health = 0;
 
-        if (Input.GetKeyDown(KeyCode.Space))
+    private void FixedUpdate()
+    {
+        if(healthPointsRelative < 0f)
+            healthPointsRelative = 0f;
+
+        if(healthPointsRelative <= 0.4f && destructionState == 0)
         {
-            health = health - 20;
-        } 
-        
-        if (health <= 40) // First Destruction
-        {
-            if (!destroyed_once)
-            {
-                particles.Play();
-                damaged.SetActive(true);
-                ruin.SetActive(false);
-                intact.SetActive(false);
-                destroyed_once = true;
-            }            
+            particles.Play();
+            damaged.SetActive(true);
+            ruin.SetActive(false);
+            intact.SetActive(false);
+            destructionState++;
         }
-
-        if (health <= 0) // Second Destruction
+        else if(healthPointsRelative <= 0f && destructionState == 1)
         {
-            if (!destroyed_twice)
-            {
-                particles.Play();
-                ruin.SetActive(true);
-                damaged.SetActive(false);
-                pieces.SetActive(true);
-                destroyed_twice = true;
-            }
+            particles.Play();
+            ruin.SetActive(true);
+            damaged.SetActive(false);
+            pieces.SetActive(true);
+            destructionState++;
         }
     }
 }

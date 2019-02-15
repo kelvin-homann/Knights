@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfe90c0a95841154c9c1c2ad680006a0, type: 3}
+  m_Name: Wooshes
+  m_EditorClassIdentifier: 
+  audioClips:
+  - {fileID: 8300000, guid: 100a171d8fe302d49b24c969f3421f2e, type: 3}
+  - {fileID: 8300000, guid: 5268c6b4a50594346ab43ad94d509993, type: 3}
+  - {fileID: 8300000, guid: be5b06b89734d7e43971e4b23ff4d3c5, type: 3}
+  - {fileID: 8300000, guid: dacc4d0bbe5adaf49ae858efd18a6f97, type: 3}
+  pitchVariation: 0.2

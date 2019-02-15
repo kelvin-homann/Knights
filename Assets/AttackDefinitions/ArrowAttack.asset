@@ -17,12 +17,14 @@ MonoBehaviour:
   - attackableType: 0
     damagePoints: 35
   - attackableType: 1
-    damagePoints: 25
+    damagePoints: 35
   - attackableType: 2
     damagePoints: 40
+  - attackableType: 4
+    damagePoints: 10
   cadence: 0.3
   cadenceVariation: 0.25
-  actionRadius: 50
+  actionRadius: 30
   adjustCloutByDistance: 0
   cloutByDistance:
     serializedVersion: 2
@@ -48,6 +50,9 @@ MonoBehaviour:
   allowCloutVariationByChance: 1
   cloutVariationByChance: 0.1
   attackedWithText: Arrow
+  executionSound: {fileID: 11400000, guid: a094085d746e68f4ca18818cf11d73d1, type: 2}
+  executionSoundDelay: 0
+  hitSound: {fileID: 11400000, guid: b1e23af79851b9c418c036268628012c, type: 2}
   startSpeed: 25
   aimMode: 2
   accuracyMode: 0

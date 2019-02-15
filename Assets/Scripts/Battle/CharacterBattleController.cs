@@ -19,7 +19,7 @@ public enum EDeploymentType
 /// A class representing the character component responsible for battle. Implements IAttackable and IDestructable and can attack 
 /// objects that implement the IAttackable interface.
 /// </summary>
-public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructable
+public class CharacterBattleController : BattleController, IAttackable, IDestructable
 {
     // constant attributes
     private const float hitIndicatorMaterialTime = 0.2f;
@@ -29,7 +29,6 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
 
     // character attributes
     [Header("Character Attributes")]
-    public EAttackableType attackableType;
     public EDeploymentType currentDeployment = EDeploymentType.None;
     public CharacterDefinition characterDefinition;
     public AttackDefinition attackDefinition;
@@ -49,15 +48,9 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
     [Tooltip("Whether to attack the next available target within the same battle group until the battle group is diminished")]
     public bool automaticallyAttackNextTarget = false;
     public float attackCadence = 1f;
-    public float initialHealthPoints = 100f;
-    public float currentHealthPoints = 100f;
-    public float maxHealthPoints = 100f;
-    [ReadOnly] public bool hit = false;
-    [ReadOnly] public bool destroyed = false;
 
-    // battle group attributes
-    [Header("Group Attributes")]
-    public int affiliation = 0;
+    // kingdom group attributes
+    [Header("Kingdom Attributes")]
     public BattleGroup assignedBattleGroup;
 
     // statistical attributes
@@ -82,6 +75,8 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
     private GameObject audioSourceGameObject;
     private AudioSource audioSource;
     private float voicePitch = 1f;
+    private float yelpSoundGapSeconds = 1f;
+    private float lastYelpSoundTime = 0f;
 
     /* MonoBehaviour methods */
 
@@ -90,7 +85,7 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
         animator = GetComponentInChildren<Animator>();
         audioSource = GetComponentInChildren<AudioSource>();
         audioSourceGameObject = audioSource.gameObject;
-        
+
         if(attackableType == EAttackableType.CharacterHeavy)
             voicePitch = Random.Range(0.5f, 0.65f);
         else
@@ -109,43 +104,19 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
         //timeSinceLastAttack = characterUnitDefinition.reactionTime + Random.Range(-characterUnitDefinition.reactionTime / 2f, characterUnitDefinition.reactionTime / 2f);
         timeUntilNextAttack = 1f / attackCadence * Random.Range(0f, attackDefinition.cadenceVariation);
 
-        BattleManager.GetInstance().RegisterBattleController(this);
+        if(battleManaged)
+        {
+            BattleManager.GetInstance().RegisterCharacterBattleController(this);
+            hasRegisteredAtBattleManager = true;
+        }
 
         UpdateHealthIndicator();
     }
 
     private void OnDestroy()
     {
-        BattleManager.GetInstance().UnregisterBattleController(this);
-    }
-
-    private void Update()
-    {
-        // debug
-        if(Input.GetKeyDown(KeyCode.A))
-        {
-            ExecuteAttack(attackTarget);
-        }
-
-        // debug
-        if(Input.GetKeyDown(KeyCode.R))
-        {
-            // reset health
-            if(currentHealthPoints < maxHealthPoints)
-            {
-                currentHealthPoints = maxHealthPoints;
-                float newScale = Mathf.Max(0.1f, currentHealthPoints / maxHealthPoints);
-                transform.localScale = new Vector3(newScale, newScale, newScale);
-            }
-
-            // also reset some stats
-            if(Input.GetKey(KeyCode.LeftShift))
-            {
-                mishitsTotal = 0;
-                attacksTotal = 0;
-                hitProbability = 1f;
-            }
-        }
+        if(battleManaged || hasRegisteredAtBattleManager)
+            BattleManager.GetInstance().UnregisterCharacterBattleController(this);
     }
 
     private void FixedUpdate()
@@ -220,7 +191,10 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
                 attackedWithText = attackData.AttackDefinition.attackedWithText;
 
             SetHitMaterial();
-            PlayWoodHitSound();
+
+            //if(attackData.Attacker.attackableType == EAttackableType.CharacterMedium)
+            //    PlayWoodHitSound();
+            PlayHitSound(attackData.AttackDefinition);
             PlayYelpSound();
 
             if(isLethal)
@@ -232,7 +206,7 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
                 currentHealthPoints = newHealthPoints;
 
 #if DEBUG
-                LogSystem.Log(ELogMessageType.BattleControllerDamaging, "{0} was attacked by <color=white>{1}</color> with <color=yellow>{2}</color> and received {3:0.00} damage points",
+                LogSystem.Log(ELogMessageType.CharacterBattleControllerDamaging, "{0} was attacked by <color=white>{1}</color> with <color=yellow>{2}</color> and received {3:0.00} damage points",
                     name, attackData.Attacker.name, attackedWithText, attackData.DamagePoints);
 #endif
 
@@ -259,7 +233,7 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
                 attackedWithText = attackData.AttackDefinition.attackedWithText;
 
 #if DEBUG
-            LogSystem.Log(ELogMessageType.BattleControllerDestroying, "{0} was destroyed by <color=white>{1}</color> with <color=yellow>{2}</color>",
+            LogSystem.Log(ELogMessageType.CharacterBattleControllerDestroying, "{0} was destroyed by <color=white>{1}</color> with <color=yellow>{2}</color>",
                 name, attacker.name, attackedWithText);
 #endif
 
@@ -270,7 +244,7 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
         else
         {
 #if DEBUG
-            LogSystem.Log(ELogMessageType.BattleControllerDestroying, "{0} was destroyed", name);
+            LogSystem.Log(ELogMessageType.CharacterBattleControllerDestroying, "{0} was destroyed", name);
 #endif
         }
 
@@ -313,14 +287,19 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
         if(attackable == null)
         {
 #if DEBUG
-            LogSystem.Log(ELogMessageType.BattleControllerAttackExecuting, "game object <color=white>{0}</color> is not of type IAttackable!", attackTarget.name);
+            LogSystem.Log(ELogMessageType.CharacterBattleControllerAttackExecuting, "game object <color=white>{0}</color> is not of type IAttackable!", attackTarget.name);
 #endif
             return;
         }
 
         // don't attack fellow kingdom characters
-        CharacterBattleController attackTargetBattleController = attackTarget.GetComponent<CharacterBattleController>();
-        if(attackTargetBattleController != null && attackTargetBattleController.affiliation == affiliation)
+        CharacterBattleController attackTargetCharacterBattleController = attackTarget.GetComponent<CharacterBattleController>();
+        if(attackTargetCharacterBattleController != null && attackTargetCharacterBattleController.affiliation == affiliation)
+            return;
+
+        // don't attack fellow kingdom structures
+        StructureBattleController attackTargetStructureBattleController = attackTarget.GetComponent<StructureBattleController>();
+        if(attackTargetStructureBattleController != null && attackTargetStructureBattleController.affiliation == affiliation)
             return;
 
         // don't attack fellow kingdom structures
@@ -334,7 +313,7 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
         attackDefinition.GenerateAttack(this, attackTarget, ref attackData, out attackResult);
         if(attackData == null)
         {
-            LogSystem.Log(ELogMessageType.BattleControllerAttackExecuting, "attack failed because no attack instance could be created");
+            LogSystem.Log(ELogMessageType.CharacterBattleControllerAttackExecuting, "attack failed because no attack instance could be created");
             return;
         }
 
@@ -345,7 +324,10 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
         {
             // switch attack animation on
             animator.SetBool("PerformAttack", true);
-            Invoke("PlayStrikeOutSounds", 0.35f);
+            //Invoke("PlayStrikeOutSounds", 0.35f);
+            Invoke("PlayEffortSound", characterDefinition.effortSoundsDelay);
+            if(attackResult != EAttackResult.Pending)
+                Invoke("PlayAttackExecutionSound", attackDefinition.executionSoundDelay);
             StartCoroutine(TransmitAttackDelayed(attackable, attackData, 0.55f));
 
             attacksTotal++;
@@ -405,6 +387,9 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
             hitsObtained++;
             damagePointsObtained += attackData.DamagePoints;
             averageDamagePointsObtained = damagePointsObtained / hitsObtained;
+
+            if(attackData.AttackResult == EAttackResult.Succeeded_Destroyed)
+                attackTarget = null;
         }
 
         // if actual attack target was destroyed request a new target from the battle manager
@@ -431,19 +416,24 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
         switch(attackData.AttackResult)
         {
             case EAttackResult.Failed_NullReferenceArgument:
-                LogSystem.Log(ELogMessageType.BattleControllerAttackExecuting, "attack failed due to null reference error");
+                LogSystem.Log(ELogMessageType.CharacterBattleControllerAttackExecuting, "attack failed due to null reference error");
                 return;
 
             case EAttackResult.Failed_TargetNotAttackable:
-                LogSystem.Log(ELogMessageType.BattleControllerAttackExecuting, "attack failed because target is not attackable");
+                LogSystem.Log(ELogMessageType.CharacterBattleControllerAttackExecuting, "attack failed because target is not attackable");
                 return;
 
             case EAttackResult.Failed_BeyondActionRadius:
-                LogSystem.Log(ELogMessageType.BattleControllerAttackExecuting, "attack failed because target is beyond action radius");
+                LogSystem.Log(ELogMessageType.CharacterBattleControllerAttackExecuting, "attack failed because target is beyond action radius");
                 return;
 
             case EAttackResult.Failed_VirtuallyIneffective:
-                LogSystem.Log(ELogMessageType.BattleControllerAttackExecuting, "attack failed because it was totally ineffective");
+                LogSystem.Log(ELogMessageType.CharacterBattleControllerAttackExecuting, "attack failed because it was totally ineffective");
+                return;
+
+            case EAttackResult.Failed_HitWrongAffiliation:
+                GetComponent<DebugCharacterMovementController>().DodgeAside();
+                LogSystem.Log(ELogMessageType.CharacterBattleControllerAttackExecuting, "attack failed because it hit the wrong (own) affiliation");
                 return;
         }
 
@@ -586,21 +576,43 @@ public class CharacterBattleController : MonoBehaviour, IAttackable, IDestructab
     {
         if(audioSource == null)
             return;
-        audioSource.PlayOneShot(AudioManager.GetRandomGruntSound(), 0.14f);
-        audioSource.PlayOneShot(AudioManager.GetRandomWooshSound(), 0.5f);
+        audioSource.PlayOneShot(AudioClips.Instance.gruntSounds.GetRandomAudioClip(), 0.14f);
+        audioSource.PlayOneShot(AudioClips.Instance.wooshSounds.GetRandomAudioClip(), 0.5f);
+    }
+
+    private void PlayEffortSound()
+    {
+        if(audioSource == null || characterDefinition.effortSounds == null)
+            return;
+        audioSource.PlayOneShot(characterDefinition.effortSounds.GetRandomAudioClip(), 0.14f);
+    }
+
+    private void PlayAttackExecutionSound()
+    {
+        if(audioSource == null || attackDefinition.executionSound == null)
+            return;
+        audioSource.PlayOneShot(attackDefinition.executionSound.GetRandomAudioClip(), 0.5f);
     }
 
     private void PlayYelpSound()
     {
-        if(audioSource == null)
+        if(audioSource == null || Time.time < lastYelpSoundTime + yelpSoundGapSeconds)
             return;
-        audioSource.PlayOneShot(AudioManager.GetRandomYelpSound(), 0.1f);
+        audioSource.PlayOneShot(AudioClips.Instance.yelpSounds.GetRandomAudioClip(), 0.1f);
+        lastYelpSoundTime = Time.time;
+    }
+
+    private void PlayHitSound(AttackDefinition attackDefinition)
+    {
+        if(audioSource == null || attackDefinition == null || attackDefinition.hitSound == null)
+            return;
+        audioSource.PlayOneShot(attackDefinition.hitSound.GetRandomAudioClip(), 0.2f);
     }
 
     private void PlayWoodHitSound()
     {
         if(audioSource == null)
             return;
-        audioSource.PlayOneShot(AudioManager.GetRandomWoodHitSound(), 0.2f);
+        audioSource.PlayOneShot(AudioClips.Instance.woodHitSounds.GetRandomAudioClip(), 0.2f);
     }
 }

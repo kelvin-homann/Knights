@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfe90c0a95841154c9c1c2ad680006a0, type: 3}
+  m_Name: Arrow Hits
+  m_EditorClassIdentifier: 
+  audioClips:
+  - {fileID: 8300000, guid: 434ba9038ac39b74ba0e157500a99426, type: 3}
+  pitchVariation: 0.2

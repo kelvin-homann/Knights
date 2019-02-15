@@ -58,6 +58,15 @@ public class AttackDefinition : ScriptableObject
     [Tooltip("The text used in UI and debug outputs; following \"X was attacked with \" or \"X was destroyed with \"")]
     public string attackedWithText;
 
+    [Tooltip("An array of audio clips from which one random clip gets played when this attack is executed")]
+    public AudioClipArray executionSound;
+
+    [Tooltip("The delay in seconds before to play a random execution sound. Counting starts when the actual attack starts.")]
+    public float executionSoundDelay = 0f;
+
+    [Tooltip("An array of audio clips from which one random clip gets played when a target is hit by this attack")]
+    public AudioClipArray hitSound;
+
     /// <summary>
     /// Generates a specific attack data object for a given attacker <b>CharacterBattleController</b> attacking the given target <b>GameObject</b>.
     /// </summary>
@@ -124,12 +133,19 @@ public class AttackDefinition : ScriptableObject
         float baseClout = 1f;
         float baseDamagePoints = genericDamagePoints;
 
-        CharacterBattleController attackTargetBattleController = attackTarget.GetComponent<CharacterBattleController>();
+        CharacterBattleController attackTargetCharacterBattleController = attackTarget.GetComponent<CharacterBattleController>();
+        StructureBattleController attackTargetStructureBattleController = attackTarget.GetComponent<StructureBattleController>();
 
         // get base clout value from damage amounts for this specific attackable type
-        if(attackTargetBattleController != null)
+        if(attackTargetCharacterBattleController != null)
         {
-            float attackableDamageAmount = GetSpecificDamagePoints(attackTargetBattleController.attackableType);
+            float attackableDamageAmount = GetSpecificDamagePoints(attackTargetCharacterBattleController.attackableType);
+            if(attackableDamageAmount != -1f)
+                baseDamagePoints = attackableDamageAmount;
+        }
+        else if(attackTargetStructureBattleController != null)
+        {
+            float attackableDamageAmount = GetSpecificDamagePoints(attackTargetStructureBattleController.attackableType);
             if(attackableDamageAmount != -1f)
                 baseDamagePoints = attackableDamageAmount;
         }

@@ -19,4 +19,6 @@ public class CharacterDefinition : ScriptableObject
     public float walkingSpeed;
     public float attackingSpeed;
     public float turningSpeed;
+    public AudioClipArray effortSounds;
+    public float effortSoundsDelay = 0f;
 }

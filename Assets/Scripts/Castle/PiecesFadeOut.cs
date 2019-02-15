@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PiecesFadeOut : MonoBehaviour {
+public class PiecesFadeOut : MonoBehaviour
+{
+    private const string AMOUNT = "_Amount";
 
     public Material materialToFade;
     public float fadeTime;
-
-    private bool fadingout = false;
     private float fadeTimer;
-
-    private const string AMOUNT = "_Amount";
 
     private void Awake()
     {
@@ -18,32 +16,28 @@ public class PiecesFadeOut : MonoBehaviour {
         enabled = false;
     }
 
-    private void OnEnable () {
+    private void OnEnable()
+    {
         materialToFade.SetFloat(AMOUNT, 0f);
         fadeTimer = fadeTime;
     }
 
-    IEnumerator FadeOut()
-    {
-//        yield return new WaitForSecondsRealtime(Random.Range(2f, 5f));
-        yield return new WaitForSecondsRealtime(4);
+    //IEnumerator FadeOut()
+    //{
+    //    //yield return new WaitForSecondsRealtime(Random.Range(2f, 5f));
+    //    yield return new WaitForSecondsRealtime(4f);
 
-        for (float i = 0; i < Random.Range(0.7f, 0.9f); i += 0.005f)
-        {
-            //meshRenderer.sharedMaterial.SetFloat("_Amount", i);
-            yield return new WaitForSeconds(0.05f);
-        }
-        Destroy(gameObject);
-    }
+    //    for(float i = 0; i < Random.Range(0.7f, 0.9f); i += 0.005f)
+    //    {
+    //        yield return new WaitForSeconds(0.05f);
+    //    }
 
-    public void startFading()
-    {
-        //StartCoroutine("FadeOut");
-    }
+    //    Destroy(gameObject);
+    //}
 
-    public void Update()
+    private void FixedUpdate()
     {
-        if(fadeTimer > 0)
+        if(fadeTimer > 0f)
         {
             fadeTimer -= Time.deltaTime;
             float value = 1.0f - (fadeTimer / fadeTime);
@@ -53,11 +47,5 @@ public class PiecesFadeOut : MonoBehaviour {
         {
             gameObject.SetActive(false);
         }
-
-        //if (!fadingout && this.isActiveAndEnabled)
-        //{
-        //    startFading();
-        //    fadingout = true;
-        //}
     }
 }

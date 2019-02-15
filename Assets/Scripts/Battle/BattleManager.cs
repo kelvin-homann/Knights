@@ -28,11 +28,12 @@ public class BattleManager : MonoBehaviour
 
     private static BattleManager instance = null;
     private List<BattleGroup> battleGroups = new List<BattleGroup>();
-    private List<CharacterBattleController> battleControllers = new List<CharacterBattleController>();
+    private List<CharacterBattleController> characterBattleControllers = new List<CharacterBattleController>();
+    private List<StructureBattleController> structureBattleControllers = new List<StructureBattleController>();
     private Dictionary<int, BattleGroup> battleGroupsDictionary = new Dictionary<int, BattleGroup>();
     private Dictionary<CharacterBattleController, BattleGroup> battleGroupMemberAssignments = new Dictionary<CharacterBattleController, BattleGroup>();
     private Dictionary<BattleGroup, BattleGroup> battleGroupPairings = new Dictionary<BattleGroup, BattleGroup>();
-    private Dictionary<CharacterBattleController, CharacterBattleController> battleControllerPairings = new Dictionary<CharacterBattleController, CharacterBattleController>();
+    private Dictionary<CharacterBattleController, BattleController> battleControllerTargets = new Dictionary<CharacterBattleController, BattleController>();
 
     private static Transform battleGroupsParent;
     private static Transform charactersParent;
@@ -90,16 +91,43 @@ public class BattleManager : MonoBehaviour
     private void Update()
     {
         if(Input.GetKeyDown(KeyCode.Alpha1))
-            BattleManager.Instance.SpawnCharacter(EAttackableType.CharacterMedium, 0, EDeploymentType.Attack);
+            SpawnCharacter(EAttackableType.CharacterMedium, 0, EDeploymentType.Attack);
 
         else if(Input.GetKeyDown(KeyCode.Alpha2))
-            BattleManager.Instance.SpawnCharacter(EAttackableType.CharacterMedium, 1, EDeploymentType.Attack);
+            SpawnCharacter(EAttackableType.CharacterLight, 0, EDeploymentType.Attack);
 
         else if(Input.GetKeyDown(KeyCode.Alpha3))
-            BattleManager.Instance.SpawnCharacter(EAttackableType.CharacterMedium, 2, EDeploymentType.Attack);
+            SpawnCharacter(EAttackableType.CharacterHeavy, 0, EDeploymentType.Attack);
 
         else if(Input.GetKeyDown(KeyCode.Alpha4))
-            BattleManager.Instance.SpawnCharacter(EAttackableType.CharacterMedium, 3, EDeploymentType.Attack);
+            SpawnCharacter(EAttackableType.CharacterMedium, 1, EDeploymentType.Attack);
+
+        else if(Input.GetKeyDown(KeyCode.Alpha5))
+            SpawnCharacter(EAttackableType.CharacterLight, 1, EDeploymentType.Attack);
+
+        else if(Input.GetKeyDown(KeyCode.Alpha6))
+            SpawnCharacter(EAttackableType.CharacterHeavy, 1, EDeploymentType.Attack);
+
+        else if(Input.GetKeyDown(KeyCode.A))
+            RedeployCharacters(1, EDeploymentType.Attack);
+
+        else if(Input.GetKeyDown(KeyCode.D))
+            RedeployCharacters(1, EDeploymentType.Defense);
+
+        else if(Input.GetKeyDown(KeyCode.H))
+        {
+            float totalStructureHealthPointsRelative = GetTotalStructureHealthPointsRelative(0);
+            LogSystem.Log("total structural health points of affiliation 0: {0:0}%",
+                totalStructureHealthPointsRelative * 100f);
+        }
+
+        else if(Input.GetKeyDown(KeyCode.S))
+        {
+            int numAttackCharacters = GetCharactersCount(1, EDeploymentType.Attack);
+            int numDefenseCharacters = GetCharactersCount(1, EDeploymentType.Defense);
+            LogSystem.Log("{0} characters in attack deployment, {1} in defense deployment",
+                numAttackCharacters, numDefenseCharacters);
+        }
     }
 
     private void FixedUpdate()
@@ -107,9 +135,10 @@ public class BattleManager : MonoBehaviour
         // only update battle groups in the specified interval
         if(Time.realtimeSinceStartup >= nextBattleGroupUpdateRealtime)
         {
+            //RemoveDestroyedBattleControllers();
             UpdateBattleGroups();
-            AssignBattleGroupPairings();
-            AssignBattleControllerPairings();
+            //AssignBattleGroupPairings();
+            AssignBattleControllerTargets();
             nextBattleGroupUpdateRealtime = Time.realtimeSinceStartup + battleGroupUpdateInterval;
         }
     }
@@ -121,7 +150,7 @@ public class BattleManager : MonoBehaviour
     public static BattleManager GetInstance()
     {
         if(instance == null && !destroyed)
-            throw new Exception("BattleManager.GetInstance(): Fatal Error: The Battle Manager has not yet been initialized. " +
+            throw new Exception("BattleManager.GetInstance(): Fatal Error: BattleManager has not yet been initialized. " +
                 "It needs to be a component of a GameObject. Maybe you need to make sure that the BattleManager script is above " +
                 "Default Time in Project Settings/Script Execution Order");
         return instance;
@@ -131,12 +160,12 @@ public class BattleManager : MonoBehaviour
     /// Registers a specific CharacterBattleController to the BattleManager's list of considered CharacterBattleControllers
     /// </summary>
     /// <param name="battleController">The CharacterBattleController to register</param>
-    public void RegisterBattleController(CharacterBattleController battleController)
+    public void RegisterCharacterBattleController(CharacterBattleController battleController)
     {
-        if(battleController != null && !battleControllers.Contains(battleController))
+        if(battleController != null && !characterBattleControllers.Contains(battleController))
         {
-            battleControllers.Add(battleController);
-            LogSystem.Log(ELogMessageType.BattleManagerControllerRegistering, "registered battle controller <color=white>{0}</color>",
+            characterBattleControllers.Add(battleController);
+            LogSystem.Log(ELogMessageType.CharacterBattleControllerRegistering, "registered character battle controller <color=white>{0}</color>",
                 battleController.name);
         }
     }
@@ -145,7 +174,7 @@ public class BattleManager : MonoBehaviour
     /// Unregisters a specific CharacterBattleController from the BattleManager's list of considered CharacterBattleControllers
     /// </summary>
     /// <param name="battleController">The CharacterBattleController to unregister</param>
-    public void UnregisterBattleController(CharacterBattleController battleController)
+    public void UnregisterCharacterBattleController(CharacterBattleController battleController)
     {
         if(battleController == null)
             return;
@@ -160,34 +189,74 @@ public class BattleManager : MonoBehaviour
             battleGroup.RemoveCharacter(battleController);
 
         // remove the battle controller from the list of managed battle controllers
-        if(battleControllers.Contains(battleController))
-            battleControllers.Remove(battleController);
+        if(characterBattleControllers.Contains(battleController))
+            characterBattleControllers.Remove(battleController);
 
         // remove the battle controller from battle group member assignments
         if(battleGroupMemberAssignments.ContainsKey(battleController))
             battleGroupMemberAssignments.Remove(battleController);
 
         // remove the battle controller from battle controller pairings (being instigator/key)
-        if(battleControllerPairings.ContainsKey(battleController))
-            battleControllerPairings.Remove(battleController);
+        if(battleControllerTargets.ContainsKey(battleController))
+            battleControllerTargets.Remove(battleController);
 
-        // run through all battle controller pairings and mark controllers in the role of receiver (value) for removal
-        List<CharacterBattleController> pairingsToRemove = new List<CharacterBattleController>();
-        foreach(KeyValuePair<CharacterBattleController, CharacterBattleController> pairing in battleControllerPairings)
+        // run through all battle controller targets and mark controllers in the role of receiver (value) for removal
+        List<CharacterBattleController> targetKeysToRemove = new List<CharacterBattleController>();
+        foreach(KeyValuePair<CharacterBattleController, BattleController> target in battleControllerTargets)
         {
-            if(pairing.Value.Equals(battleController) && !pairingsToRemove.Contains(pairing.Key))
-                pairingsToRemove.Add(pairing.Key);
+            if(target.Value.Equals(battleController) && !targetKeysToRemove.Contains(target.Key))
+                targetKeysToRemove.Add(target.Key);
         }
 
-        // remove the battle controller from all battle controller pairings (being receiver/value)
-        foreach(CharacterBattleController pairing in pairingsToRemove)
-            battleControllerPairings.Remove(pairing);
+        // remove the battle controller from all battle controller targets (being receiver/value)
+        foreach(CharacterBattleController pairing in targetKeysToRemove)
+            battleControllerTargets.Remove(pairing);
 
         // clear temporary list of pairings marked for removal
-        pairingsToRemove.Clear();
+        targetKeysToRemove.Clear();
 
-        LogSystem.Log(ELogMessageType.BattleManagerControllerUnregistering, "unregistered battle controller <color=white>{0}</color>", 
+        LogSystem.Log(ELogMessageType.CharacterBattleControllerUnregistering, "unregistered character battle controller <color=white>{0}</color>", 
             battleController.name);
+    }
+
+    /// <summary>
+    /// Registers a specific StructureBattleController to the BattleManager's list of considered StructureBattleControllers
+    /// </summary>
+    /// <param name="battleController">The StructureBattleController to register</param>
+    public void RegisterStructureBattleController(StructureBattleController battleController)
+    {
+        if(battleController != null && !structureBattleControllers.Contains(battleController))
+        {
+            structureBattleControllers.Add(battleController);
+            LogSystem.Log(ELogMessageType.StructureBattleControllerRegistering, "registered structure battle controller <color=white>{0}</color>",
+                battleController.name);
+        }
+    }
+
+    /// <summary>
+    /// Unregisters a specific StructureBattleController to the BattleManager's list of considered StructureBattleControllers
+    /// </summary>
+    /// <param name="battleController">The StructureBattleController to register</param>
+    public void UnregisterStructureBattleController(StructureBattleController battleController)
+    {
+        // remove the battle controller from the list of managed battle controllers
+        if(structureBattleControllers.Contains(battleController))
+            structureBattleControllers.Remove(battleController);
+
+        // run through all battle controller targets and mark controllers in the role of receiver (value) for removal
+        List<CharacterBattleController> targetKeysToRemove = new List<CharacterBattleController>();
+        foreach(KeyValuePair<CharacterBattleController, BattleController> target in battleControllerTargets)
+        {
+            if(target.Value.Equals(battleController) && !targetKeysToRemove.Contains(target.Key))
+                targetKeysToRemove.Add(target.Key);
+        }
+
+        // remove the battle controller from all battle controller targets (being receiver/value)
+        foreach(CharacterBattleController pairing in targetKeysToRemove)
+            battleControllerTargets.Remove(pairing);
+
+        // clear temporary list of pairings marked for removal
+        targetKeysToRemove.Clear();
     }
 
     /// <summary>
@@ -199,7 +268,7 @@ public class BattleManager : MonoBehaviour
         if(battleGroup != null && !battleGroups.Contains(battleGroup))
         {
             battleGroups.Add(battleGroup);
-            LogSystem.Log(ELogMessageType.BattleManagerGroupRegistering, "registered battle group <color=white>{0}</color>",
+            LogSystem.Log(ELogMessageType.BattleGroupRegistering, "registered battle group <color=white>{0}</color>",
                 battleGroup.name);
         }
     }
@@ -224,7 +293,7 @@ public class BattleManager : MonoBehaviour
         // remove from considered battle groups
         battleGroups.Remove(battleGroup);
 
-        LogSystem.Log(ELogMessageType.BattleManagerGroupUnregistering, "unregistered battle group <color=white>{0}</color>",
+        LogSystem.Log(ELogMessageType.BattleGroupUnregistering, "unregistered battle group <color=white>{0}</color>",
             battleGroup.name);
     }
 
@@ -259,6 +328,92 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns the number of character battle controllers in the given affiliation.
+    /// </summary>
+    /// <param name="affiliation">affiliation to consider</param>
+    /// <returns></returns>
+    public int GetCharactersCount(int affiliation)
+    {
+        CharacterBattleController[] battleControllers = FindObjectsOfType<CharacterBattleController>();
+        int numCharacters = 0;
+
+        foreach(CharacterBattleController battleController in battleControllers)
+        {
+            if(battleController.affiliation == affiliation)
+                numCharacters++;
+        }
+
+        return numCharacters;
+    }
+
+    /// <summary>
+    /// Returns the number of character battle controllers in the given affiliation and with the given deployment type.
+    /// </summary>
+    /// <param name="affiliation">affiliation to consider</param>
+    /// <param name="deploymentType">deployment type to consider</param>
+    /// <returns></returns>
+    public int GetCharactersCount(int affiliation, EDeploymentType deploymentType)
+    {
+        CharacterBattleController[] battleControllers = FindObjectsOfType<CharacterBattleController>();
+        int numCharacters = 0;
+
+        foreach(CharacterBattleController battleController in battleControllers)
+        {
+            if(battleController.affiliation == affiliation && battleController.currentDeployment == deploymentType)
+                numCharacters++;
+        }
+
+        return numCharacters;
+    }
+
+    /// <summary>
+    /// Returns the number of character battle controllers of the given type, in the given affiliation and with
+    /// the given deployment type.
+    /// </summary>
+    /// <param name="characterType">character type to consider</param>
+    /// <param name="affiliation">affiliation to consider</param>
+    /// <param name="deploymentType">deployment type to consider</param>
+    /// <returns></returns>
+    public int GetCharactersCount(EAttackableType characterType, int affiliation, EDeploymentType deploymentType)
+    {
+        CharacterBattleController[] battleControllers = FindObjectsOfType<CharacterBattleController>();
+        int numCharacters = 0;
+
+        foreach(CharacterBattleController battleController in battleControllers)
+        {
+            if(battleController.attackableType == characterType && battleController.affiliation == affiliation && 
+                battleController.currentDeployment == deploymentType)
+                numCharacters++;
+        }
+
+        return numCharacters;
+    }
+
+    /// <summary>
+    /// Returns the relative health points in a range [0,1] of all structures belonging to the given affiliation
+    /// </summary>
+    /// <param name="affiliation">the affiliation that the structures belong to</param>
+    /// <returns>the relative health points</returns>
+    public float GetTotalStructureHealthPointsRelative(int affiliation)
+    {
+        float currentHealthPoints = 0f;
+        float maximumHealthPoints = 0f;
+
+        foreach(StructureBattleController structureBattleController in structureBattleControllers)
+        {
+            if(structureBattleController.affiliation == affiliation)
+            {
+                currentHealthPoints += structureBattleController.currentHealthPoints;
+                maximumHealthPoints += structureBattleController.maxHealthPoints;
+            }
+        }
+
+        float healthPointsRelative = currentHealthPoints / maximumHealthPoints;
+
+        return healthPointsRelative;
+    }
+
+    /// <summary>
     /// Spawns a character of specified type into the given affiliation and deployment type and at the 
     /// specified position.
     /// </summary>
@@ -271,7 +426,7 @@ public class BattleManager : MonoBehaviour
 
         if(spawnPointGameObject == null)
         {
-            LogSystem.Log(ELogMessageType.BattleControllerSpawning, 
+            LogSystem.Log(ELogMessageType.CharacterBattleControllerSpawning, 
                 "failed spawning new character battle controller for affiliation {0}. " + 
                 "There is no spawn point defined for this affiliation.", affiliation);
             return;
@@ -297,30 +452,143 @@ public class BattleManager : MonoBehaviour
         // look what character type we need to spawn
         switch(characterType)
         {
-            case EAttackableType.CharacterMedium:
-                if(knightGameObjectPrefab != null)
-                {
-                    // instantiate new character gameobject from prefab
-                    newCharacter = Instantiate(knightGameObjectPrefab, charactersParent);
-                    newCharacter.name = string.Format("Knight {0}", nextCharacterId);
-                    newCharacter.transform.position = position;
-                    newCharacter.transform.LookAt(Vector3.zero);
+        case EAttackableType.CharacterMedium:
+            if(knightGameObjectPrefab != null)
+            {
+                // instantiate new character gameobject from prefab
+                newCharacter = Instantiate(knightGameObjectPrefab, charactersParent);
+                newCharacter.name = string.Format("Knight {0}", nextCharacterId);
+            }
+            break;
 
-                    // get character battle controller of new character and assign base properties
-                    CharacterBattleController battleController = newCharacter.GetComponent<CharacterBattleController>();
-                    battleController.currentDeployment = deploymentType;
-                    battleController.affiliation = affiliation;
+        case EAttackableType.CharacterLight:
+            if(archerGameObjectPrefab != null)
+            {
+                // instantiate new character gameobject from prefab
+                newCharacter = Instantiate(archerGameObjectPrefab, charactersParent);
+                newCharacter.name = string.Format("Archer {0}", nextCharacterId);
+            }
+            break;
 
-                    nextCharacterId++;
-                }
-                break;
+        case EAttackableType.CharacterHeavy:
+            if(heavyGameObjectPrefab != null)
+            {
+                // instantiate new character gameobject from prefab
+                newCharacter = Instantiate(heavyGameObjectPrefab, charactersParent);
+                newCharacter.name = string.Format("Heavy {0}", nextCharacterId);
+            }
+            break;
         }
+
+        if(newCharacter == null)
+            return;
+
+        newCharacter.transform.position = position;
+        newCharacter.transform.LookAt(Vector3.zero);
+
+        // get character battle controller of new character and assign base properties
+        CharacterBattleController battleController = newCharacter.GetComponent<CharacterBattleController>();
+        battleController.currentDeployment = deploymentType;
+        battleController.affiliation = affiliation;
+
+        nextCharacterId++;
 
         ChangeAffiliationColor(newCharacter, 0, affiliation);
     }
 
     /// <summary>
-    /// Changes the affiliation color of any game object that has renderers and used predefined materials.
+    /// Changes the deployment of a certain number of characters of a given affiliation.
+    /// </summary>
+    /// <param name="affiliation"></param>
+    /// <param name="newDeploymentType">the new deployment</param>
+    /// <param name="count">the number of characters to change the deployment of</param>
+    /// <returns>the actual number of character deployments changed</returns>
+    public int RedeployCharacters(int affiliation, EDeploymentType newDeploymentType, int count = 1)
+    {
+        if(affiliation < 0 || affiliation > 3 || count <= 0)
+            return 0;
+
+        int numCharacterDeploymentsChanged = 0;
+        GameObject deploymentPoint = null;
+
+        /* step 1: list all battle controllers in question and order them by their distance to the target deployment 
+         * point and prefer battle controllers that do not currently have an attack target assigned to them */
+
+        /* receive a list of all character battle controllers of the given affiliation and that are in other 
+           deployments than the target deployment */
+        List<CharacterBattleController> battleControllersFiltered = characterBattleControllers.Where(battleController => 
+            battleController != null && battleController.affiliation == affiliation && 
+            battleController.currentDeployment != newDeploymentType).ToList();
+
+        // get target deployment point if set
+        if(newDeploymentType == EDeploymentType.Attack)
+            deploymentPoint = GetAttackPoint(affiliation);
+        else if(newDeploymentType == EDeploymentType.Defense)
+            deploymentPoint = GetDefensePoint(affiliation);
+
+        // sort battle controllers using a custom sorting order
+        battleControllersFiltered.Sort(delegate(CharacterBattleController a, CharacterBattleController b)
+        {
+            float scoreA = 0f;
+            float scoreB = 0f;
+
+            /* if the target deployment point is set, get the distances (squared) of both battle controllers 
+             * to that point and assign as score */
+            if(deploymentPoint != null)
+            {
+                scoreA = MathUtilities.VectorDistanceSquared(deploymentPoint.transform.position, a.transform.position);
+                scoreB = MathUtilities.VectorDistanceSquared(deploymentPoint.transform.position, b.transform.position);
+            }
+
+            /* reduce the score drastically if the battle controller does currently has no attack target
+             * and thus does not have to pulled out of a fight */
+            if(a.attackTarget == null)
+                scoreA /= 10f;
+            if(b.attackTarget == null)
+                scoreB /= 10f;
+
+            return scoreA.CompareTo(scoreB);
+        });
+
+        // truncate the list if neccessary
+        if(count < battleControllersFiltered.Count)
+            battleControllersFiltered.RemoveRange(count, battleControllersFiltered.Count - count);
+
+        foreach(CharacterBattleController battleController in battleControllersFiltered)
+        {
+            // step 2: change deployment and unset attack target of chosen battle controllers
+
+            battleController.currentDeployment = newDeploymentType;
+            battleController.attackTarget = null;
+            numCharacterDeploymentsChanged++;
+
+            // step 3: unassign chosen battle controllers from their corresponding battle groups
+
+            if(battleGroupMemberAssignments.ContainsKey(battleController))
+            {
+                BattleGroup battleGroup = battleGroupMemberAssignments[battleController];
+                battleGroup.RemoveCharacter(battleController);
+                battleGroupMemberAssignments.Remove(battleController);
+            }
+
+            // step 4: remove chosen battle controllers from battle controller pairings where they are an instigator
+
+            if(battleControllerTargets.ContainsKey(battleController))
+            {
+                battleControllerTargets.Remove(battleController);
+            }
+        }
+
+        LogSystem.Log(ELogMessageType.CharacterBattleControllerRedeploying, "{0} characters of affiliation {1} redeployed into {1}; " +
+            "{2} requested", numCharacterDeploymentsChanged, affiliation, 
+            newDeploymentType == EDeploymentType.Attack ? "attack" : "defense", count);
+
+        return numCharacterDeploymentsChanged;
+    }
+
+    /// <summary>
+    /// Changes the affiliation color of any game object that has renderers and uses predefined affiliation 
+    /// based materials.
     /// </summary>
     /// <param name="affiliatedObject">the gameobject that used an affiliation material</param>
     /// <param name="fromAffiliation">the affiliation the object currently is associated with</param>
@@ -507,7 +775,7 @@ public class BattleManager : MonoBehaviour
         for(int i = 0; i <= 3; i++)
         {
             Dictionary<int, BattleGroup> battleGroups = new Dictionary<int, BattleGroup>();
-            List<CharacterBattleController> affiliatedBattleControllers = battleControllers.Where(x => x.affiliation == i).ToList();
+            List<CharacterBattleController> affiliatedBattleControllers = characterBattleControllers.Where(x => x.affiliation == i).ToList();
             if(affiliatedBattleControllers.Count > 0)
             {
                 UpdateBattleGroups(affiliatedBattleControllers, i, out battleGroups);
@@ -853,11 +1121,11 @@ public class BattleManager : MonoBehaviour
             for(int i = 0; i < instigatorBattleControllers.Count; i++)
             {
                 CharacterBattleController instigatorBattleController = instigatorBattleControllers[i];
-                CharacterBattleController mostFittingReceiverBattleController = null;
+                BattleController mostFittingTarget = null;
                 float minDistanceSquared = float.MaxValue;
 
-                // if the current instigator battle controller is already paired continue
-                if(battleControllerPairings.ContainsKey(instigatorBattleController) || battleControllerPairings.ContainsValue(instigatorBattleController))
+                // if the current instigator battle controller already has a target continue
+                if(battleControllerTargets.ContainsKey(instigatorBattleController) || battleControllerTargets.ContainsValue(instigatorBattleController))
                     continue;
 
                 // run through all receiver battle controllers that are unpaired to find the most fitting
@@ -866,7 +1134,7 @@ public class BattleManager : MonoBehaviour
                     CharacterBattleController receiverBattleController = receiverBattleControllers[j];
 
                     // if the current receiver battle controller is already paired continue
-                    if(battleControllerPairings.ContainsKey(receiverBattleController) || battleControllerPairings.ContainsValue(receiverBattleController))
+                    if(battleControllerTargets.ContainsKey(receiverBattleController) || battleControllerTargets.ContainsValue(receiverBattleController))
                         continue;
 
                     // calculate squared distance between possible pairing's controllers
@@ -879,13 +1147,13 @@ public class BattleManager : MonoBehaviour
                     // for now only consider the distance between the two battle controllers (easiest approach)
                     if(distanceSquared < minDistanceSquared)
                     {
-                        mostFittingReceiverBattleController = receiverBattleController;
+                        mostFittingTarget = receiverBattleController;
                         minDistanceSquared = distanceSquared;
                     }
                 }
 
                 // if we have not yet found a fitting receiver battle controller then probably because all are already paired
-                if(mostFittingReceiverBattleController == null)
+                if(mostFittingTarget == null)
                 {
                     // run through all receiver battle controllers that are paired to find the most fitting
                     for(int j = 0; j < receiverBattleControllers.Count; j++)
@@ -893,7 +1161,7 @@ public class BattleManager : MonoBehaviour
                         CharacterBattleController receiverBattleController = receiverBattleControllers[j];
 
                         // if the current receiver battle controller is already an instigator itself continue
-                        if(!battleControllerPairings.ContainsValue(receiverBattleController))
+                        if(!battleControllerTargets.ContainsValue(receiverBattleController))
                             continue;
 
                         // calculate squared distance between possible pairing's controllers
@@ -906,29 +1174,136 @@ public class BattleManager : MonoBehaviour
                         // for now only consider the distance between the two battle controllers (easiest approach)
                         if(distanceSquared < minDistanceSquared)
                         {
-                            mostFittingReceiverBattleController = receiverBattleController;
+                            mostFittingTarget = receiverBattleController;
                             minDistanceSquared = distanceSquared;
                         }
                     }
                 }
 
                 // only proceed if we have found a fitting receiver battle controller
-                if(mostFittingReceiverBattleController != null)
+                if(mostFittingTarget != null)
                 {
                     // assign the most fitting receiver battle controller to the instigator battle controller
-                    battleControllerPairings.Add(instigatorBattleController, mostFittingReceiverBattleController);
+                    battleControllerTargets.Add(instigatorBattleController, mostFittingTarget);
 
                     // assign each other as their attack targets
-                    instigatorBattleController.AssignAttackTarget(mostFittingReceiverBattleController.gameObject);
+                    instigatorBattleController.AssignAttackTarget(mostFittingTarget.gameObject);
 
-                    // avoid overwrite and only assign a new attack target to the receiver battle controller if it currently has none
-                    if(mostFittingReceiverBattleController.attackTarget == null)
-                        mostFittingReceiverBattleController.AssignAttackTarget(instigatorBattleController.gameObject);
+                    /* avoid overwrite and only assign a new attack target to the receiver battle controller if it currently 
+                     * has none and if it is in attack deployment */
+                    CharacterBattleController mostFittingTargetCharacterBattleController = mostFittingTarget.GetComponent<CharacterBattleController>();
+                    if(mostFittingTargetCharacterBattleController != null && mostFittingTargetCharacterBattleController.attackTarget == null &&
+                        mostFittingTargetCharacterBattleController.currentDeployment == EDeploymentType.Attack)
+                        mostFittingTargetCharacterBattleController.AssignAttackTarget(instigatorBattleController.gameObject);
 
-                    LogSystem.Log(ELogMessageType.BattleControllerTargetAssigning,
+                    LogSystem.Log(ELogMessageType.CharacterBattleControllerTargetAssigning,
                         "assigned battle controller pairing between <color=white>{0}</color> and <color=white>{1}</color>",
-                        instigatorBattleController.name, mostFittingReceiverBattleController.name);
+                        instigatorBattleController.name, mostFittingTarget.name);
                 }
+            }
+        }
+    }
+
+    private void AssignBattleControllerTargets()
+    {
+        List<BattleController> possibleTargets = new List<BattleController>();
+        for(int i = 0; i < characterBattleControllers.Count; i++)
+            possibleTargets.Add(characterBattleControllers[i]);
+        for(int i = 0; i < structureBattleControllers.Count; i++)
+            possibleTargets.Add(structureBattleControllers[i]);
+
+        // run through all character battle controllers
+        for(int i = 0; i < characterBattleControllers.Count; i++)
+        {
+            CharacterBattleController attackerBattleController = characterBattleControllers[i];
+            BattleController mostFittingTarget = null;
+            float attackerVisionRadiusSquared = attackerBattleController.characterDefinition.visionRadius * attackerBattleController.characterDefinition.visionRadius;
+            float minDistanceSquared = float.MaxValue;
+
+            // if the current attacker battle controller already has a target continue
+            if(battleControllerTargets.ContainsKey(attackerBattleController) /*|| battleControllerTargets.ContainsValue(attackerBattleController)*/)
+                continue;
+
+            // run through all possible targets that are not yet a target of any character to find the most fitting
+            for(int j = 0; j < possibleTargets.Count; j++)
+            {
+                BattleController targetBattleController = possibleTargets[j];
+
+                // skip if same battle controller or same affiliation
+                if(attackerBattleController == targetBattleController || attackerBattleController.affiliation == targetBattleController.affiliation)
+                    continue;
+
+                //CharacterBattleController targetCharacterBattleController = targetBattleController.GetComponent<CharacterBattleController>();
+
+                //// if the current target battle controller is already a target continue
+                //if((targetCharacterBattleController != null && battleControllerTargets.ContainsKey(targetCharacterBattleController)) ||
+                //    battleControllerTargets.ContainsValue(targetCharacterBattleController))
+                //    continue;
+
+                // calculate squared distance between the two
+                float distanceSquared = MathUtilities.VectorDistanceSquared(attackerBattleController.transform.position,
+                    targetBattleController.transform.position);
+
+                // todo: calculate pairing score based on distance, current health of and effectiveness against opponent
+
+                // for now only consider the distance between the two battle controllers (easiest approach)
+                if(distanceSquared < minDistanceSquared && distanceSquared <= attackerVisionRadiusSquared)
+                {
+                    mostFittingTarget = targetBattleController;
+                    minDistanceSquared = distanceSquared;
+                }
+            }
+
+            // if we have not yet found a fitting receiver battle controller then probably because all are already paired
+            if(mostFittingTarget == null)
+            {
+                // run through all receiver battle controllers that are paired to find the most fitting
+                for(int j = 0; j < possibleTargets.Count; j++)
+                {
+                    BattleController targetBattleController = possibleTargets[j];
+
+                    // skip if same battle controller or same affiliation
+                    if(attackerBattleController == targetBattleController || attackerBattleController.affiliation == targetBattleController.affiliation)
+                        continue;
+
+                    // if the current target battle controller is already an attacker itself continue
+                    if(!battleControllerTargets.ContainsValue(targetBattleController))
+                        continue;
+
+                    // calculate squared distance between the two
+                    float distanceSquared = MathUtilities.VectorDistanceSquared(attackerBattleController.transform.position,
+                        targetBattleController.transform.position);
+
+                    // todo: calculate pairing score based on distance, current health of and effectiveness against opponent
+
+                    // for now only consider the distance between the two battle controllers (easiest approach)
+                    if(distanceSquared < minDistanceSquared && distanceSquared <= attackerVisionRadiusSquared)
+                    {
+                        mostFittingTarget = targetBattleController;
+                        minDistanceSquared = distanceSquared;
+                    }
+                }
+            }
+
+            // only proceed if we have found a fitting receiver battle controller
+            if(mostFittingTarget != null)
+            {
+                // assign the most fitting receiver battle controller to the instigator battle controller
+                battleControllerTargets.Add(attackerBattleController, mostFittingTarget);
+
+                // assign each other as their attack targets
+                attackerBattleController.AssignAttackTarget(mostFittingTarget.gameObject);
+
+                /* avoid overwrite and only assign a new attack target to the receiver battle controller if it currently 
+                    * has none and if it is in attack deployment */
+                //CharacterBattleController mostFittingTargetCharacterBattleController = mostFittingTarget.GetComponent<CharacterBattleController>();
+                //if(mostFittingTargetCharacterBattleController != null && mostFittingTargetCharacterBattleController.attackTarget == null &&
+                //    mostFittingTargetCharacterBattleController.currentDeployment == EDeploymentType.Attack)
+                //    mostFittingTargetCharacterBattleController.AssignAttackTarget(attackerBattleController.gameObject);
+
+                LogSystem.Log(ELogMessageType.CharacterBattleControllerTargetAssigning,
+                    "assigned battle controller pairing between <color=white>{0}</color> and <color=white>{1}</color>",
+                    attackerBattleController.name, mostFittingTarget.name);
             }
         }
     }
@@ -945,5 +1320,27 @@ public class BattleManager : MonoBehaviour
 
         foreach(BattleGroup battleGroupKey in battleGroupKeysToRemove)
             battleGroupPairings.Remove(battleGroupKey);
+    }
+
+    private void RemoveDestroyedBattleControllers()
+    {
+        List<StructureBattleController> structureBattleControllersToRemove = new List<StructureBattleController>();
+
+        foreach(StructureBattleController structureBattleController in structureBattleControllers)
+        {
+            if(structureBattleController.destroyed)
+                structureBattleControllersToRemove.Add(structureBattleController);
+        }
+
+        //foreach(KeyValuePair<CharacterBattleController, BattleController> entry in battleControllerTargets)
+        //{
+        //    if(entry.Value == )
+        //        structureBattleControllersToRemove.Add(structureBattleController);
+        //}
+
+        foreach(StructureBattleController structureBattleController in structureBattleControllersToRemove)
+        {
+            structureBattleControllers.Remove(structureBattleController);
+        }
     }
 }

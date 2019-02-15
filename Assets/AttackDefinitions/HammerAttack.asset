@@ -15,9 +15,9 @@ MonoBehaviour:
   genericDamagePoints: 30
   damagePoints:
   - attackableType: 0
-    damagePoints: 70
+    damagePoints: 40
   - attackableType: 1
-    damagePoints: 25
+    damagePoints: 20
   - attackableType: 2
     damagePoints: 20
   cadence: 0.333
@@ -147,3 +147,6 @@ MonoBehaviour:
   allowCloutVariationByChance: 1
   cloutVariationByChance: 0.2
   attackedWithText: Hammer
+  executionSound: {fileID: 11400000, guid: 99d610288a87ba04da63a2b529b5ec27, type: 2}
+  executionSoundDelay: 0
+  hitSound: {fileID: 11400000, guid: ec4a74fbc61bbe04da92d0161acaa4eb, type: 2}

@@ -26,7 +26,7 @@ public class Projectile : MonoBehaviour
 
     public Transform target;
     public Attack attackData;
-    [HideInInspector]
+    //[HideInInspector]
     public EProjectileAimMode projectileAimMode;
     public float targetVelocityEstimationError = 0.1f;
     [Range(-20f, 70f)]
@@ -72,7 +72,7 @@ public class Projectile : MonoBehaviour
         {
             staticsLayerId = LayerMask.NameToLayer("Statics");
             if(staticsLayerId == -1)
-                Debug.Log("Projectile.Awake(): could not get layer id for layer <color=white>Statics</color>");
+                LogSystem.Log(ELogMessageType.ProjectileCreating, "could not get layer id for layer <color=white>Statics</color>");
         }
 
         rbody = GetComponent<Rigidbody>();
@@ -116,7 +116,7 @@ public class Projectile : MonoBehaviour
         GameObject attackTarget = attackData.AttackTarget;
         GameObject colliderTarget = collision.gameObject;
 
-        LogSystem.Log(ELogMessageType.ProjectileColliding, "Projectile.OnCollisionEnter(): projectile hit gameobject <color=white>{0}</color>", colliderTarget.name);
+        LogSystem.Log(ELogMessageType.ProjectileColliding, "projectile collided with gameobject <color=white>{0}</color>", colliderTarget.name);
 
         /* ########################################### *
          * EXERT DAMAGE ON IATTACKABLE WHEN ONE IS HIT */
@@ -126,12 +126,13 @@ public class Projectile : MonoBehaviour
         {
             launched = false;
 
-            CharacterBattleController attackTargetBattleController = collision.gameObject.GetComponent<CharacterBattleController>();
+            BattleController attackTargetBattleController = collision.gameObject.GetComponent<BattleController>();
 
             // check if wrong affiliation hit
             if(attackTargetBattleController != null && attacker.affiliation == attackTargetBattleController.affiliation)
             {
                 attackData.AttackResult = EAttackResult.Failed_HitWrongAffiliation;
+                attackData.AttackExecutedCallback(attackData);
                 DestroyGameObjectGuided();
                 return;
             }
@@ -148,12 +149,15 @@ public class Projectile : MonoBehaviour
             // exert attack on target
             attackable.OnAttack(attackData);
 
-            LogSystem.Log(ELogMessageType.ProjectileHitting, "Projectile.OnCollisionEnter(): projectile hit gameobject <color=white>{0}</color>", 
-                colliderTarget.name);
+            //LogSystem.Log(ELogMessageType.ProjectileHitting, "projectile hit attackable <color=white>{0}</color>",
+            //    colliderTarget.name);
 
             // play hit sound
-            if(audioSource != null && projectileHitSound != null)
-                audioSource.PlayOneShot(projectileHitSound);
+            if(audioSource != null && attackData.AttackDefinition.hitSound != null)
+            {
+                audioSource.pitch = attackData.AttackDefinition.hitSound.GetRandomPitch();
+                audioSource.PlayOneShot(attackData.AttackDefinition.hitSound.GetRandomAudioClip());
+            }
 
             // spawn projectile carcass mesh within the target
             if(spawnProjectileCarcassAtTarget && projectileMesh != null)
@@ -175,18 +179,6 @@ public class Projectile : MonoBehaviour
                     ResetToInitialState();
             }
 
-            // debug: switch material of hit object to hit indicator material
-            //if(hitIndicatorMaterial != null && !attackable.Destroyed)
-            //{
-            //    MeshRenderer meshRenderer = collision.gameObject.GetComponent<MeshRenderer>();
-            //    if(meshRenderer != null)
-            //    {
-            //        Material original = meshRenderer.material;
-            //        meshRenderer.material = hitIndicatorMaterial;
-            //        StartCoroutine(SetMaterial(original, meshRenderer, hitIndicatorDuration));
-            //    }
-            //}
-
             EnableRigidbody(false);
             hit = true;
 
@@ -198,7 +190,7 @@ public class Projectile : MonoBehaviour
         /* ################################################################### *
          * DO WHATEVER IS REQUIRED WHEN PROJECTILE DOES NOT HIT AN IATTACKABLE */
 
-        else if(collision.gameObject.layer == staticsLayerId && launched)
+        else
         {
             launched = false;
             touchingGround = true;
@@ -211,34 +203,50 @@ public class Projectile : MonoBehaviour
                 attackData.AttackExecutedCallback(attackData);
             }
 
-            LogSystem.Log(ELogMessageType.ProjectileMishitting, "Projectile.OnCollisionEnter(): projectile mishit target and hit some statics");
-
-            if(deleteProjectileWhenHitGround)
-            {
-                DestroyGameObjectGuided();
-            }
-            else
-            {
-                // spawn projectile carcass mesh on the ground
-                if(spawnProjectileCarcassOnGround && projectileMesh != null)
-                {
-                    GameObject projectileCarcass = Instantiate(projectileMesh);
-                    if(projectileCarcass != null)
-                    {
-                        projectileCarcass.name = projectileMesh.name + "Carcass";
-                        projectileCarcass.transform.SetPositionAndRotation(projectileMesh.transform.position, projectileMesh.transform.rotation);
-                        projectileCarcass.transform.parent = projectileCarcassesParent;
-                        StartCoroutine(DestroyCarcass(projectileCarcass, projectileCarcassLifespan));
-                    }
-                    ResetToInitialState();
-                }
-
-                EnableRigidbody(false);
-                hit = true;
-
-                DestroyGameObjectGuided();
-            }
+            DestroyGameObjectGuided();
         }
+
+        //else if(collision.gameObject.layer == staticsLayerId && launched)
+        //{
+        //    launched = false;
+        //    touchingGround = true;
+        //    missedTarget = true;
+
+        //    // call attack executed callback
+        //    if(attackData.AttackExecutedCallback != null)
+        //    {
+        //        attackData.AttackResult = EAttackResult.Failed_Mishit;
+        //        attackData.AttackExecutedCallback(attackData);
+        //    }
+
+        //    LogSystem.Log(ELogMessageType.ProjectileMishitting, "projectile mishit target and hit some statics");
+
+        //    if(deleteProjectileWhenHitGround)
+        //    {
+        //        DestroyGameObjectGuided();
+        //    }
+        //    else
+        //    {
+        //        // spawn projectile carcass mesh on the ground
+        //        if(spawnProjectileCarcassOnGround && projectileMesh != null)
+        //        {
+        //            GameObject projectileCarcass = Instantiate(projectileMesh);
+        //            if(projectileCarcass != null)
+        //            {
+        //                projectileCarcass.name = projectileMesh.name + "Carcass";
+        //                projectileCarcass.transform.SetPositionAndRotation(projectileMesh.transform.position, projectileMesh.transform.rotation);
+        //                projectileCarcass.transform.parent = projectileCarcassesParent;
+        //                StartCoroutine(DestroyCarcass(projectileCarcass, projectileCarcassLifespan));
+        //            }
+        //            ResetToInitialState();
+        //        }
+
+        //        EnableRigidbody(false);
+        //        hit = true;
+
+        //        DestroyGameObjectGuided();
+        //    }
+        //}
     }
 
     private void OnCollisionExit(Collision collision)
@@ -270,7 +278,24 @@ public class Projectile : MonoBehaviour
 
         float targetDistance = 0f, G = Physics.gravity.y, sinTheta = 0f, theta = 0f, actualLaunchAngle = 0f, tanAlpha = 0f, targetHeight = 0f;
         float localInitialVelocityZ = 0f, localInitialVelocityY = 0f, timeOfFlight = 0f;
+        float targetBodyHeight = 1f, halfTargetBodyHeight = 0.5f;
+        float maximumTargetDistance = attackData.AttackDefinition.actionRadius;
         Vector3 localInitialVelocity, predictedTargetTranslation;
+        NavMeshAgent targetNavMeshAgent = target.GetComponent<NavMeshAgent>();
+
+        if(targetNavMeshAgent != null)
+            targetBodyHeight = targetNavMeshAgent.height;
+        else
+        {
+            StructureBattleController structure = target.GetComponent<StructureBattleController>();
+            if(structure != null)
+            {
+                targetBodyHeight = structure.height;
+                //highTrajectory = true;
+            }
+        }
+
+        halfTargetBodyHeight = targetBodyHeight / 2f;
 
         /* ###################
          * CALCULATE ACTUAL AIM TARGET POSITION IN RESPECT TO AIM MODE
@@ -280,12 +305,12 @@ public class Projectile : MonoBehaviour
         if(projectileAimMode == EProjectileAimMode.Straight)
         {
             // aim straight for the target and assume momentary target position (stupid technique)
-            targetPosition = target.transform.position;
+            targetPosition = target.transform.position + Vector3.up * halfTargetBodyHeight;
         }
         // aim ahead if target is moving otherwise aim straight
         else
         {
-            targetPosition = target.transform.position;
+            targetPosition = target.transform.position + Vector3.up * halfTargetBodyHeight;
             Vector3 targetVelocity = Vector3.zero;
 
             // get velocity of target
@@ -307,6 +332,16 @@ public class Projectile : MonoBehaviour
             {
                 targetDistance = Vector3.Distance(initialPosition, targetPosition);
                 targetHeight = targetPosition.y - initialPosition.y;
+
+                // calculate low or high aiming offset
+                float dotForwardVectors = Vector3.Dot(target.transform.forward, attackData.Attacker.transform.forward);
+                float lowHighAimingOffset = -(dotForwardVectors -0.5f) * (targetDistance / maximumTargetDistance) * targetBodyHeight;
+
+                // adjust target height by adding/substracting for low or high aiming
+                targetHeight += lowHighAimingOffset;
+
+                LogSystem.Log("dot forward vectors = {4:0.00}; low/high aiming offset = {0:0.00}; target height = {1:0.00}; target distance = {2:0.00}; target distance : maximumTargetDistance = {3:0.00}", 
+                    lowHighAimingOffset, targetHeight, targetDistance, targetDistance / maximumTargetDistance, dotForwardVectors);
 
                 // estimate velocity for human felt predictive ahead aiming
                 if(projectileAimMode == EProjectileAimMode.Predictive)
@@ -424,7 +459,7 @@ public class Projectile : MonoBehaviour
             // if target is stationary
             else
             {
-                targetPosition = target.transform.position;
+                targetPosition = target.transform.position + Vector3.up * halfTargetBodyHeight;
             }
         }
 
@@ -499,6 +534,12 @@ public class Projectile : MonoBehaviour
         rbody.velocity = initialVelocity;
         launched = true;
 
+        if(attackData.AttackDefinition.executionSound != null)
+        {
+            audioSource.PlayOneShot(attackData.AttackDefinition.executionSound.GetRandomAudioClip(), 0.8f);
+            //AudioSource.PlayClipAtPoint(attackData.AttackDefinition.executionSound.GetRandomAudioClip(), transform.position, 0.8f);
+        }
+
         //Debug.LogFormat("Projectile.Launch(): projectile launch speed = {0:0.00} u/s", initialVelocity.magnitude);
     }
 
@@ -535,7 +576,8 @@ public class Projectile : MonoBehaviour
     }
 
     /// <summary>
-    /// Set the collider of the spawner so that the spawner doesn't get hit by the projectile during launch
+    /// Set the collider of the spawner so that the spawner doesn't get hit by the projectile or the
+    /// projectile gets deflected or impeded during launch
     /// </summary>
     /// <param name="spawnerCollider"></param>
     public void SetSpawnerCollider(Collider spawnerCollider)
@@ -548,23 +590,27 @@ public class Projectile : MonoBehaviour
     }
 
     /// <summary>
-    /// Disables collision detection between this projectile and any collider attached to a CharacterBattleController or StructureController with the specified affiliation number
+    /// Disables collision detection between this projectile and any collider attached to a CharacterBattleController or 
+    /// StructureBattleController with the specified affiliation number
     /// </summary>
     /// <param name="affiliation"></param>
     public void SetIgnoreCollisionForAffiliation(int affiliation)
     {
         Collider projectileCollider = GetComponent<Collider>();
+        if(projectileCollider == null)
+            return;
+
         int collidersIgnored = 0;
 
         // TODO: access managed list of all battle controllers (of one affiliation); may be situated in a PlayerController, Kingdom or GameManager class
-        var battleControllers = FindObjectsOfType<CharacterBattleController>();
-        foreach(CharacterBattleController battleController in battleControllers)
+        var characterBattleControllers = FindObjectsOfType<BattleController>();
+        foreach(BattleController battleController in characterBattleControllers)
         {
             if(battleController.affiliation != affiliation)
                 continue;
 
-            Collider collider = battleController.GetComponent<Collider>();
-            if(collider != null)
+            Collider[] colliders = battleController.GetComponentsInChildren<Collider>();
+            foreach(Collider collider in colliders)
             {
                 Physics.IgnoreCollision(collider, projectileCollider);
                 collidersIgnored++;

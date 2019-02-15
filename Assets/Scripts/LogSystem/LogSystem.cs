@@ -27,24 +27,37 @@ public enum ELogMessageType
     KingdomLosing, 
     KingdomDestroying, 
 
-    // battle manager message types
-    BattleManagerControllerRegistering,
-    BattleManagerControllerUnregistering,
-    BattleManagerGroupRegistering, 
-    BattleManagerGroupUnregistering, 
+    // movement controller message types
+    MovementControllerCreating,
+    MovementControllerDestroying,
+    MovementControllerDodgingAside, 
 
-    // battle controller message types
-    BattleControllerCreating, 
-    BattleControllerSpawning, 
-    BattleControllerAttackExecuting, 
-    BattleControllerAttackReceiving, 
-    BattleControllerDamaging, 
-    BattleControllerDestroying, 
-    BattleControllerTargetAssigning, 
-    BattleControllerTargetChoosing, 
+    // character battle controller message types
+    CharacterBattleControllerCreating, 
+    CharacterBattleControllerSpawning, 
+    CharacterBattleControllerRegistering,
+    CharacterBattleControllerUnregistering,
+    CharacterBattleControllerAttackExecuting, 
+    CharacterBattleControllerAttackReceiving, 
+    CharacterBattleControllerDamaging, 
+    CharacterBattleControllerDestroying, 
+    CharacterBattleControllerTargetAssigning, 
+    CharacterBattleControllerTargetChoosing,
+    CharacterBattleControllerRedeploying,
+
+    // structure battle controller message types
+    StructureBattleControllerCreating,
+    StructureBattleControllerSpawning,
+    StructureBattleControllerRegistering,
+    StructureBattleControllerUnregistering,
+    StructureBattleControllerAttackReceiving,
+    StructureBattleControllerDamaging,
+    StructureBattleControllerDestroying,
 
     // battle group message types
     BattleGroupCreating, 
+    BattleGroupRegistering, 
+    BattleGroupUnregistering, 
     BattleGroupReinforcing, 
     BattleGroupWeakening, 
     BattleGroupMerging, 
@@ -56,6 +69,7 @@ public enum ELogMessageType
     BattleInstanceDestroying, 
 
     // projectile message types
+    ProjectileCreating,
     ProjectileColliding, 
     ProjectileMishitting, 
     ProjectileHitting, 
@@ -76,16 +90,19 @@ public static class LogSystem
 
     private static bool enableLogMessage = true;
     private static bool useCallerMethodPrefix = true;
-    private static string callerMethodPrefixColor = "#000000";
+    private static string callerMethodPrefixColor = "#ddddaa";
 
     static LogSystem()
     {
-        DisallowMessageType(ELogMessageType.BattleManagerControllerRegistering);
-        DisallowMessageType(ELogMessageType.BattleManagerControllerUnregistering);
+        DisallowMessageType(ELogMessageType.CharacterBattleControllerRegistering);
+        //DisallowMessageType(ELogMessageType.CharacterBattleControllerUnregistering);
+        DisallowMessageType(ELogMessageType.StructureBattleControllerRegistering);
+        //DisallowMessageType(ELogMessageType.StructureBattleControllerUnregistering);
         DisallowMessageType(ELogMessageType.BattleGroupCreating);
-        DisallowMessageType(ELogMessageType.BattleManagerGroupRegistering);
+        DisallowMessageType(ELogMessageType.BattleGroupRegistering);
+        DisallowMessageType(ELogMessageType.BattleGroupUnregistering);
 
-        DisallowCallerType(typeof(Projectile));
+        //DisallowCallerType(typeof(Projectile));
         //DisallowCallerType(typeof(BattleManager));
     }
 
