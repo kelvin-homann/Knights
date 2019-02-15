@@ -7,10 +7,19 @@ public class MapMaker : EditorWindow {
 
     private Texture2D mapImage;
     private MapTileset tileset;
+    private MeshRenderer materialHolder;
+    private TileMakerMode mode = TileMakerMode.Mesh;
 
     private int[,] map;
     private int width, height;
     private Transform parent;
+
+    private TileMerger merger;
+
+    public enum TileMakerMode
+    {
+        Prefabs, Mesh
+    }
 
     [MenuItem("Tools/Map Maker")]
     private static void Open()
@@ -21,6 +30,8 @@ public class MapMaker : EditorWindow {
     private void OnGUI()
     {
         tileset = EditorGUILayout.ObjectField("Tileset", tileset, typeof(MapTileset), false) as MapTileset;
+        materialHolder = EditorGUILayout.ObjectField("Material Holder", materialHolder, typeof(MeshRenderer), false) as MeshRenderer;
+        mode = (TileMakerMode)EditorGUILayout.EnumPopup("Mode", mode);
 
         Rect imageRect = GUILayoutUtility.GetAspectRect(1, GUILayout.Width(Mathf.Min(position.width, position.height - 20) * 0.95f));
         imageRect.position = new Vector2(imageRect.x + 15, imageRect.y);
@@ -31,6 +42,9 @@ public class MapMaker : EditorWindow {
 
     private void BuildMap()
     {
+        if(mode == TileMakerMode.Mesh)
+            merger = new TileMerger();
+
         //Init map
         width = mapImage.width;
         height = mapImage.height;
@@ -48,8 +62,8 @@ public class MapMaker : EditorWindow {
         }
 
         //Make Parent
-        GameObject p = new GameObject("Tiles");
-        parent = p.transform;
+        //GameObject p = new GameObject("Tiles");
+        //parent = p.transform;
 
         //Make tiles
         for (int l = 0; l < 255; l++) //Layer
@@ -69,6 +83,9 @@ public class MapMaker : EditorWindow {
                 }
             }
         }
+
+        if (mode == TileMakerMode.Mesh)
+            merger.Apply(materialHolder.sharedMaterials);
     }
 
     private bool CheckTile(MapTile tile, int x, int y, int l)
@@ -95,7 +112,11 @@ public class MapMaker : EditorWindow {
     private void SpawnTile(MapTile tile, int x, int y, int v)
     {
         Vector3 pos = new Vector3(x, v, y);
-        GameObject.Instantiate(tile.tilePrefab, pos, tile.tilePrefab.transform.rotation, parent);
+        
+        if (mode == TileMakerMode.Mesh)
+            merger.AddMesh(tile.TileMesh, pos);
+        else
+            GameObject.Instantiate(tile.tilePrefab, pos, tile.tilePrefab.transform.rotation, parent);
     }
 
     private int GetMap(int x, int y)

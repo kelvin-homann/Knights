@@ -15,6 +15,14 @@ public class MapTile : ScriptableObject {
     public int[] mask;
     public GameObject tilePrefab;
 
+    private Mesh tileMesh;
+    public Mesh TileMesh {
+        get {
+            if (tileMesh == null) tileMesh = tilePrefab.GetComponent<MeshFilter>().sharedMesh;
+            return tileMesh;
+        }
+    }
+
     public MapTile()
     {
         mask = new int[MASK_WIDTH * MASK_HEIGHT];
