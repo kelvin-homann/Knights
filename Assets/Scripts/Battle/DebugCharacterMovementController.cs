@@ -40,7 +40,7 @@ public class DebugCharacterMovementController : MonoBehaviour
 
         /* a random offset that the character has from the precise deployment point; this is used to avoid 
          * many characters from flocking together at exactly the deployment point */
-        deploymentPointOffset = new Vector3(Random.Range(3.5f, 5.5f), 0f, Random.Range(3.5f, 5.5f));
+        deploymentPointOffset = new Vector3(Random.Range(-2.5f, 2.5f), 0f, Random.Range(-2.5f, 2.5f));
 
         animationSpeedMultiplier = Random.Range(0.98f, 1.02f);
         animator.speed *= animationSpeedMultiplier;

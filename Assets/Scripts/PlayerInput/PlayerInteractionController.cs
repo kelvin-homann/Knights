@@ -112,6 +112,8 @@ public abstract class PlayerInteractionController : MonoBehaviour {
 
     public void SetMarkerPosition(Transform marker, Vector3 targetPos)
     {
+        if (!marker.gameObject.activeSelf) marker.gameObject.SetActive(true);
+
         UnityEngine.AI.NavMeshHit hit;
         UnityEngine.AI.NavMesh.SamplePosition(targetPos, out hit, 100, UnityEngine.AI.NavMesh.AllAreas);
 

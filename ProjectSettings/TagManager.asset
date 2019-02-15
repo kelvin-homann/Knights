@@ -15,10 +15,10 @@ TagManager:
   - 
   - 
   - PostProcessing
-  - Terrain
-  - Structures
-  - Vegetation
-  - Decoration
+  - Player1
+  - Player2
+  - Player3
+  - Player4
   - Collectibles
   - Characters
   - Managers

@@ -1,0 +1,225 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!200 &20000000
+ShaderVariantCollection:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: ShaderVariants
+  m_Shaders:
+  - first: {fileID: 65, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 66, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: DIRECTIONAL
+        passType: 4
+      - keywords: DIRECTIONAL LIGHTPROBE_SH
+        passType: 4
+      - keywords: DIRECTIONAL LIGHTPROBE_SH SHADOWS_SCREEN
+        passType: 4
+      - keywords: SHADOWS_DEPTH
+        passType: 8
+  - first: {fileID: 64, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: SHADOWS_SPLIT_SPHERES
+        passType: 0
+      - keywords: SHADOWS_SINGLE_CASCADE SHADOWS_SPLIT_SPHERES
+        passType: 0
+  - first: {fileID: 62, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 74, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: UNITY_HDR_ON
+        passType: 0
+  - first: {fileID: 69, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: DIRECTIONAL SHADOWS_SCREEN UNITY_HDR_ON
+        passType: 0
+  - first: {fileID: 104, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 106, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: _SUNDISK_SIMPLE
+        passType: 0
+  - first: {fileID: 207, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: SOFTPARTICLES_ON
+        passType: 0
+  - first: {fileID: 210, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: DIRECTIONAL LIGHTPROBE_SH SOFTPARTICLES_ON _ALPHABLEND_ON
+        passType: 4
+      - keywords: SHADOWS_DEPTH _ALPHABLEND_ON
+        passType: 8
+      - keywords: PROCEDURAL_INSTANCING_ON SHADOWS_DEPTH _ALPHABLEND_ON
+        passType: 8
+  - first: {fileID: 211, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: SOFTPARTICLES_ON _ALPHABLEND_ON _FADING_ON
+        passType: 4
+      - keywords: SHADOWS_DEPTH _ALPHABLEND_ON
+        passType: 8
+      - keywords: PROCEDURAL_INSTANCING_ON SHADOWS_DEPTH _ALPHABLEND_ON
+        passType: 8
+  - first: {fileID: 9000, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 9001, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 9002, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 9003, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 10770, guid: 0000000000000000f000000000000000, type: 0}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 4800000, guid: 305f87cc5f4007f41b6c11a2cdba218b, type: 3}
+    second:
+      variants:
+      - keywords: DIRECTIONAL
+        passType: 4
+      - keywords: DIRECTIONAL LIGHTPROBE_SH
+        passType: 4
+      - keywords: DIRECTIONAL LIGHTPROBE_SH SHADOWS_SCREEN
+        passType: 4
+      - keywords: DIRECTIONAL INSTANCING_ON LIGHTPROBE_SH
+        passType: 4
+      - keywords: DIRECTIONAL INSTANCING_ON LIGHTPROBE_SH SHADOWS_SCREEN
+        passType: 4
+      - keywords: DIRECTIONAL
+        passType: 5
+      - keywords: INSTANCING_ON SHADOWS_DEPTH
+        passType: 8
+  - first: {fileID: 4800000, guid: 878533f24713f73468fb97b0db76b475, type: 3}
+    second:
+      variants:
+      - keywords: DIRECTIONAL
+        passType: 4
+      - keywords: DIRECTIONAL LIGHTPROBE_SH
+        passType: 4
+      - keywords: DIRECTIONAL INSTANCING_ON LIGHTPROBE_SH
+        passType: 4
+      - keywords: DIRECTIONAL INSTANCING_ON LIGHTPROBE_SH SHADOWS_SCREEN
+        passType: 4
+      - keywords: DIRECTIONAL
+        passType: 5
+      - keywords: INSTANCING_ON SHADOWS_DEPTH
+        passType: 8
+  - first: {fileID: 4800000, guid: 8dcb6fc04dc83744fb23cb3b2320d901, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: SHADOWS_DEPTH
+        passType: 8
+  - first: {fileID: 4800000, guid: 94e0150db8c93d240aaef856e486a622, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 4800000, guid: adc8f588a9d189f47b9e2777cda14757, type: 3}
+    second:
+      variants:
+      - keywords: DIRECTIONAL
+        passType: 4
+      - keywords: DIRECTIONAL LIGHTPROBE_SH
+        passType: 4
+      - keywords: DIRECTIONAL LIGHTPROBE_SH SHADOWS_SCREEN
+        passType: 4
+      - keywords: DIRECTIONAL INSTANCING_ON LIGHTPROBE_SH
+        passType: 4
+      - keywords: DIRECTIONAL INSTANCING_ON LIGHTPROBE_SH SHADOWS_SCREEN
+        passType: 4
+      - keywords: SHADOWS_DEPTH
+        passType: 8
+  - first: {fileID: 4800000, guid: e1e1e8dba239dec4aa018cc90d8dfa3f, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 4800000, guid: 291f0d5b6045f4646847c59b4ce13ac5, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 4800000, guid: 7d89469544dfa214eabdbf37fca76f40, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 4800000, guid: 8ce0a6f4c8cae334d8a5617f302b6769, type: 3}
+    second:
+      variants:
+      - keywords: COLOR_GRADING VIGNETTE_CLASSIC
+        passType: 0
+  - first: {fileID: 4800000, guid: d248d4d1588851f43a9fa18a4e6f0209, type: 3}
+    second:
+      variants:
+      - keywords: TONEMAPPING_FILMIC
+        passType: 0
+  - first: {fileID: 4800000, guid: e881ae5627d1cc84395303acfbca6fb2, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: FOG_OFF
+        passType: 0
+  - first: {fileID: 4800000, guid: 24b6a2cacb99f32478eda111102fdd2d, type: 3}
+    second:
+      variants:
+      - keywords: INSTANCING_ON SHADOWS_DEPTH
+        passType: 8
+  - first: {fileID: 4800000, guid: 5951f2a881eaf144a9e1f072d81915c1, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 4800000, guid: 8d876d24816c8414fae95aa8b4899117, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+  - first: {fileID: 4800000, guid: e99afdccb9b7d51498873b5620672827, type: 3}
+    second:
+      variants:
+      - keywords: ETC1_EXTERNAL_ALPHA
+        passType: 0

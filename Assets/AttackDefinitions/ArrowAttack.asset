@@ -21,7 +21,7 @@ MonoBehaviour:
   - attackableType: 2
     damagePoints: 40
   - attackableType: 4
-    damagePoints: 10
+    damagePoints: 5
   cadence: 0.3
   cadenceVariation: 0.25
   actionRadius: 30

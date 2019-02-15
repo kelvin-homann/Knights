@@ -27,6 +27,8 @@ public class GameManager : MonoBehaviour {
     public delegate void GameOverFunc(Player winner);
     public event GameOverFunc onGameOver;
 
+    private AsyncOperation sceneLoadOperation;
+
 	void Awake () {
         //Handle singelton / Dont destroy on load
         if (instance == null) instance = this;
@@ -43,6 +45,9 @@ public class GameManager : MonoBehaviour {
         //Check if game has been initialized
         if (Game == null) return;
 
+        //Check if scene is loading
+        if (sceneLoadOperation != null && !sceneLoadOperation.isDone) return;
+
 		//Check if the game is over
         if(IsGameRunning && IsGameOver)
         {
@@ -54,8 +59,11 @@ public class GameManager : MonoBehaviour {
     //Start a new game with new gamemode for given players
     public void StartGame(params Player[] players)
     {
+        foreach (var p in players) p.IsPlaying = true;
+
         Game = new Game(new GameMode(), players);
         Game.Start();
-        UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(mapName);
+        //sceneLoadOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(mapName);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(mapName);
     }
 }

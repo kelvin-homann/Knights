@@ -50,6 +50,7 @@ public class CastleInteractionController : PlayerInteractionController {
 
         //Progress bar
         progressBar.fillAmount = 0;
+
     }
 
     protected override void Update()
@@ -164,12 +165,13 @@ public class CastleInteractionController : PlayerInteractionController {
     private void SpawnCharacter(SlotContent content)
     {
         Debug.Log("Spawning Character " + content);
+        BattleManager.Instance.SpawnCharacter(GetCharacterClass(content), player.Kingdom, EDeploymentType.Defense);
     }
 
     protected override void ActionA()
     {
-        //harvestTargetMarker.transform.position = player.WorldCursor.position;
-        SetMarkerPosition(harvestTargetMarker, player.WorldCursor.position);
+        //harvestTargetMarker.transform position = player.WorldCursor.position;
+        //SetMarkerPosition(harvestTargetMarker, player.WorldCursor.position);
     }
 
     protected override void ActionB()
@@ -185,6 +187,17 @@ public class CastleInteractionController : PlayerInteractionController {
     protected override void ActionY()
     {
         QueueCharacter(SlotContent.Knight);
+    }
+
+    private EAttackableType GetCharacterClass(SlotContent content)
+    {
+        switch(content)
+        {
+            case SlotContent.Archer: return EAttackableType.CharacterLight;
+            case SlotContent.Knight: return EAttackableType.CharacterMedium;
+            case SlotContent.Heavy: return EAttackableType.CharacterHeavy;
+        }
+        return EAttackableType.CharacterMedium;
     }
 
 }

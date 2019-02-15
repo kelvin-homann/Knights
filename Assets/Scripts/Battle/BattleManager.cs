@@ -322,6 +322,16 @@ public class BattleManager : MonoBehaviour
         return affiliation >= 0 && affiliation < attackPoints.Length ? attackPoints[affiliation] : null;
     }
 
+    public void SetAttackPoint(int affiliation, Vector3 pos)
+    {
+        attackPoints[affiliation].transform.position = pos;
+    }
+
+    public void SetDefendPoint(int affiliation, Vector3 pos)
+    {
+        defensePoints[affiliation].transform.position = pos;
+    }
+
     /// <summary>
     /// Gets the predefined (attribute) defense point of the given affiliation.
     /// </summary>

@@ -87,6 +87,10 @@ public class PlayerController : MonoBehaviour {
         //Shortcuts
         castleMenu.ShortcutsEnabled = !battleMenu.IsVisible;
         battleMenu.ShortcutsEnabled = !castleMenu.IsVisible;
+
+        //HACK
+        if (player.ID == PlayerID.One)
+            DisplaySettings.renderHealthBars = Controller.Any.Back.IsHeld;
     }
 
     public void Disable()

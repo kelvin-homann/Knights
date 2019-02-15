@@ -20,18 +20,22 @@ public class Player
 
     public bool IsPlaying { get; set; }
 
-    private int crystals = 100;
+    private int crystals = 500;
     public int Crystals { get { return crystals; }
         set {
             crystals = Mathf.Max(0, value);
         }
     }
 
-    public int OffenseSize { get; set; }
-    public int DefenseSize { get; set; }
+    private float pollInterval = 0.5f;
+    private float lastPollTime;
+    private int offensePoll, defensePoll;
+    public int OffenseSize { get { CheckPoll(); return offensePoll; } }
+    public int DefenseSize { get { CheckPoll(); return defensePoll; } }
     public int TotalUnits { get { return OffenseSize + DefenseSize; } }
 
-    public int Health { get; set; }
+    private int healthPoll;
+    public int Health { get { CheckPoll(); return healthPoll; } }
     public bool IsDead { get { return Health <= 0; } }
     public bool IsAlive { get { return !IsDead; } }
 
@@ -39,11 +43,24 @@ public class Player
 
     public Transform WorldCursor { get; set; }
 
+    private void CheckPoll()
+    {
+        if (Time.time - lastPollTime > pollInterval) PollValues();
+    }
+
+    public void PollValues()
+    {
+        if (BattleManager.Instance == null) return;
+        defensePoll = BattleManager.Instance.GetCharactersCount(Kingdom, EDeploymentType.Defense);
+        offensePoll = BattleManager.Instance.GetCharactersCount(Kingdom, EDeploymentType.Attack);
+        healthPoll = Mathf.RoundToInt(BattleManager.Instance.GetTotalStructureHealthPointsRelative(Kingdom) * 100);
+        lastPollTime = Time.time;
+    }
+
     public Player(PlayerID id) 
     {
         ID = id;
-        crystals = 100;
-        Health = 100;
+        crystals = 500;
         IsPlaying = false;
     }
 

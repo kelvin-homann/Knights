@@ -134,7 +134,7 @@ public class SplitscreenDevider : MonoBehaviour
 
         //Initialize screen and set target resolution
         screen = new VirtualScreen(Camera.main.aspect);
-        targetResolution = new Vector2(Camera.main.pixelWidth, Camera.main.pixelHeight);
+        targetResolution = new Vector2(UnityEngine.Screen.width, UnityEngine.Screen.height);
 	}
 	
 	//Update component
@@ -492,7 +492,6 @@ public class SplitscreenDevider : MonoBehaviour
         return result;
     }
 
-#if UNITY_EDITOR
     private void OnDrawGizmos()
     {
         if (!Application.isPlaying) return;
@@ -580,7 +579,6 @@ public class SplitscreenDevider : MonoBehaviour
         Gizmos.DrawMesh(lineMesher.Mesh);
 
     }
-#endif
     private Color[] debugColors = { Color.red, Color.blue, Color.green, Color.yellow };
 }
 
