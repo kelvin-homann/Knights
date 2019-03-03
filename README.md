@@ -7,4 +7,4 @@
 	or any other files that should not be covered by version control inside
 	the Assets/User
 
-- fixed spelling mistake ;)
+
