@@ -1,3 +1,5 @@
+# Knights
+
 ![Knights](https://i.imgur.com/LfAYMLV.png)
 
 Knights is a Real Time Strategy game developed for Unity3D. It is supposed to be very casual and is played with controllers. It was devoped for our Game Development class. 
