@@ -18,6 +18,7 @@ Knights is a Real Time Strategy game developed for Unity3D. It is supposed to be
 The Design Process and more Screenshots can be seen on [Behance]()
 
 The game can be played with up to 4 players using a dynamic Splitscreen
+
 ![Split Screen Screenshot](https://i.imgur.com/ATcgp8b.jpg)
 
 ### Developers
