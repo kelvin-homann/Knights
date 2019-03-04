@@ -17,7 +17,7 @@ Knights is a Real Time Strategy game developed for Unity3D. It is supposed to be
 
 The Design Process and look of the App can be seen on [Behance](https://www.behance.net/gallery/77020121/Cooka)
 
-### Contributors
+### Developers
 
 * Kelvin Homann
 * Karl Möller
